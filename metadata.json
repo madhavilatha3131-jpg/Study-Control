@@ -1,0 +1,6 @@
+{
+  "name": "STUDYCTRL",
+  "description": "Real-time collaborative study/focus tracking app with cyberpunk neon aesthetic, Pomodoro timers, group chat, and leaderboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
