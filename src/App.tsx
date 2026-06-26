@@ -4,12 +4,24 @@ import {
   Users, Trophy, MessageSquare, LogOut, Copy, Check, Play, Square,
   Volume2, ShieldAlert, Wifi, WifiOff, Paperclip, Send, Maximize2,
   Trash2, Award, Clock, HelpCircle, Lock, User as UserIcon, BookOpen, KeyRound, Cpu, X, Upload, ExternalLink, Compass, ChevronRight, FileText, Smartphone,
-  Home, RefreshCw, Bell, AlertTriangle, ShieldCheck
+  Home, RefreshCw, Bell, AlertTriangle, ShieldCheck, CheckSquare, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { Participant, Message, RoomConfig, User, StudyMaterial } from "./types";
+import { Participant, Message, RoomConfig, User, StudyMaterial, StudyTask } from "./types";
 import StatsModal from "./components/StatsModal";
 import ParticipantModal from "./components/ParticipantModal";
+
+// --- MOTIVATIONAL QUOTES ---
+export const STUDY_QUOTES = [
+  "Consistency is the key secret for success.",
+  "Success isn't always about greatness. It's about consistency. Consistent hard work leads to success.",
+  "Small daily improvements over time lead to stunning results. Stay consistent.",
+  "The secret of your future is hidden in your daily routine. Show up every day.",
+  "Consistency is what transforms average into excellence.",
+  "Great things are not done by impulse, but by a series of small things brought together.",
+  "Your focus determines your reality. Keep pushing consistently.",
+  "Energy and persistence conquer all things."
+];
 
 // --- AUTH CONTEXT & PROVIDER ---
 interface AuthContextType {
@@ -68,7 +80,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("study_auth_user", JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
-    setLocation("/");
+    setLocation("/session/NEXT_TOPPERS");
   };
 
   const logout = () => {
@@ -247,6 +259,20 @@ function LoginPage() {
               </span>
             </Link>
           </span>
+
+          {/* Elegant Alignment Alert & Quote banner */}
+          <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-2.5 select-none text-left">
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-400">
+              <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
+              <span className="text-[10px] font-bold tracking-wider uppercase">Study alignment: Daily 6:45 PM (18:45)</span>
+            </div>
+            <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-3 flex gap-2.5 items-start">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed text-zinc-300 italic">
+                "Consistency is the key secret for success. Show up daily and build your future."
+              </p>
+            </div>
+          </div>
         </form>
       </motion.div>
     </div>
@@ -259,7 +285,6 @@ function RegisterPage() {
   const [, setLocation] = useLocation();
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [regError, setRegError] = useState("");
@@ -283,14 +308,6 @@ function RegisterPage() {
       return;
     }
 
-    if (email.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        setRegError("Enter a valid email address");
-        return;
-      }
-    }
-
     if (password.length < 6) {
       setRegError("Password requires 6+ characters");
       return;
@@ -308,7 +325,6 @@ function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
-          email: email.trim(),
           password,
         }),
       });
@@ -332,7 +348,7 @@ function RegisterPage() {
       <div className="absolute bottom-[15%] left-[20%] w-[400px] h-[400px] rounded-full bg-cyan-500 opacity-10 filter blur-[120px] pointer-events-none" />
 
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="w-full max-w-[440px] bg-white/[0.03] backdrop-blur-[24px] border border-white/[0.08] rounded-[32px] p-8 shadow-[0_24px_50px_rgba(0,0,0,0.4)] flex flex-col z-10"
@@ -366,20 +382,6 @@ function RegisterPage() {
               placeholder="Username Handle"
               className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10"
               id="reg-username"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
-              Email Address <span className="text-zinc-500 lowercase">(optional)</span>
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com (optional)"
-              className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10"
-              id="reg-email"
             />
           </div>
 
@@ -440,6 +442,20 @@ function RegisterPage() {
               </span>
             </Link>
           </span>
+
+          {/* Elegant Alignment Alert & Quote banner */}
+          <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-2.5 select-none text-left">
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-400">
+              <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
+              <span className="text-[10px] font-bold tracking-wider uppercase">Study alignment: Daily 6:45 PM (18:45)</span>
+            </div>
+            <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-3 flex gap-2.5 items-start">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed text-zinc-300 italic">
+                "Small daily improvements over time lead to stunning results. Stay consistent."
+              </p>
+            </div>
+          </div>
         </form>
       </motion.div>
     </div>
@@ -449,7 +465,7 @@ function RegisterPage() {
 // --- PAGE 2.5: PASSWORD RECOVERY (/forgot-password) ---
 function ForgotPasswordPage() {
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [step, setStep] = useState<1 | 2>(1);
@@ -463,8 +479,8 @@ function ForgotPasswordPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    if (!email) {
-      setErrorMsg("Email address is required");
+    if (!username) {
+      setErrorMsg("Username is required");
       return;
     }
 
@@ -473,7 +489,7 @@ function ForgotPasswordPage() {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ username: username.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -513,7 +529,7 @@ function ForgotPasswordPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email.trim(),
+          username: username.trim(),
           code: code.trim(),
           newPassword,
         }),
@@ -565,7 +581,7 @@ function ForgotPasswordPage() {
         {debugCode && (
           <div className="mt-2 mb-4 p-3 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-cyan-400">
             <span className="font-bold">// SIMULATOR INBOX NOTICE:</span>
-            <p className="mt-1">Verification code sent to {email}:</p>
+            <p className="mt-1">Verification code sent for {username}:</p>
             <p className="text-sm font-black text-white mt-1.5 bg-black/40 border border-cyan-500/20 px-2 py-1.5 rounded-xl text-center tracking-widest">{debugCode}</p>
           </div>
         )}
@@ -586,15 +602,15 @@ function ForgotPasswordPage() {
           <form onSubmit={handleRequestCode} className="flex flex-col gap-5">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
-                Email Address
+                Username
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Your username"
                 className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10"
-                id="recover-email"
+                id="recover-username"
                 required
               />
             </div>
@@ -603,7 +619,7 @@ function ForgotPasswordPage() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              disabled={!email || pending}
+              disabled={!username || pending}
               className="mt-1 text-sm font-semibold py-3.5 rounded-2xl bg-gradient-to-r from-[#8c46ff] to-[#792cf9] text-white hover:opacity-95 shadow-lg shadow-purple-500/15 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
               id="recover-request-btn"
             >
@@ -620,11 +636,11 @@ function ForgotPasswordPage() {
           <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
-                Email
+                Username
               </label>
               <input
-                type="email"
-                value={email}
+                type="text"
+                value={username}
                 disabled
                 className="w-full bg-[#121016]/80 border border-white/5 py-2.5 px-4 rounded-2xl text-sm text-white/40 cursor-not-allowed"
               />
@@ -698,6 +714,10 @@ function LobbyPage() {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorStr, setErrorStr] = useState("");
+
+  useEffect(() => {
+    setLocation("/session/NEXT_TOPPERS");
+  }, [setLocation]);
 
   const handleEnterNextToppers = async () => {
     setErrorStr("");
@@ -819,7 +839,7 @@ function LobbyPage() {
 // --- PAGE 4: SESSION ROOM (/session/:code) ---
 function SessionRoomPage({ params }: { params: { code: string } }) {
   const code = params.code.toUpperCase();
-  const { user, token } = useAuth();
+  const { user, token, logout } = useAuth();
   const [, setLocation] = useLocation();
 
   // Network WebSocket State
@@ -829,8 +849,17 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
+  const [tasks, setTasks] = useState<StudyTask[]>([]);
   const [activeSecureMaterial, setActiveSecureMaterial] = useState<StudyMaterial | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuoteIndex((prev) => (prev + 1) % STUDY_QUOTES.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!activeSecureMaterial) {
@@ -893,7 +922,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const [ticker, setTicker] = useState(0);
 
   // Sidebar controls
-  const [activeTab, setActiveTab] = useState<"presence" | "leaderboard" | "chat" | "materials" | "doubt">("presence");
+  const [activeTab, setActiveTab] = useState<"presence" | "leaderboard" | "chat" | "materials" | "doubt" | "tasks">("presence");
   const [unreadMsg, setUnreadMsg] = useState(0);
 
   // Gemini AI Doubt Solver state variables
@@ -912,6 +941,11 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
   // PDF Study Materials custom upload from pc / phone state
   const [pdfUploadTitle, setPdfUploadTitle] = useState("");
+  const [taskSubject, setTaskSubject] = useState("Mathematics");
+  const [taskDesc, setTaskDesc] = useState("");
+  const [taskPriority, setTaskPriority] = useState<"High" | "Medium" | "Low">("Medium");
+  const [taskPriorityFilter, setTaskPriorityFilter] = useState<"All" | "High" | "Medium" | "Low">("All");
+  const [taskStatusFilter, setTaskStatusFilter] = useState<"All" | "Pending" | "Completed">("All");
   const [pdfUploadFileBase64, setPdfUploadFileBase64] = useState<string | null>(null);
   const [pdfUploadFileName, setPdfUploadFileName] = useState<string | null>(null);
   const [isReadingPdf, setIsReadingPdf] = useState(false);
@@ -972,6 +1006,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             setParticipants(payload.participants);
             setMessages(payload.messages);
             setMaterials(payload.materials || []);
+            setTasks(payload.tasks || []);
             setConnecting(false);
             setIsConnected(true);
             setLostConnection(false);
@@ -996,6 +1031,10 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             setMaterials(payload.materials);
           }
 
+          else if (payload.type === "tasks_update") {
+            setTasks(payload.tasks);
+          }
+
           else if (payload.type === "chat_message_received") {
             setMessages((prev) => {
               const next = [...prev, payload.message];
@@ -1011,7 +1050,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           else if (payload.type === "pong") {
             const currentLatency = Date.now() - payload.timestamp;
             setLatency(currentLatency);
-            if (currentLatency > 250) {
+            if (currentLatency > 1200) {
               setShowLatencyToast(true);
             } else {
               setShowLatencyToast(false);
@@ -1145,7 +1184,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   }, [isSimulatedAppRunning, hasUsageAccessPermission, simulatedActiveApp]);
 
   // Handle active tab change
-  const handleTabSelection = (tab: "presence" | "leaderboard" | "chat" | "materials" | "doubt") => {
+  const handleTabSelection = (tab: "presence" | "leaderboard" | "chat" | "materials" | "doubt" | "tasks") => {
     setActiveTab(tab);
     if (tab === "chat") {
       setUnreadMsg(0);
@@ -1295,13 +1334,41 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
       if (pomoPhase === "Work") {
         setPomoPhase("Break");
         setPomoSecondsLeft(pomBreak * 60);
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          const me = participants.find((p) => p.id === selfId);
+          if (me && me.isActive) {
+            wsRef.current.send(JSON.stringify({ type: "stop_focus" }));
+          }
+        }
       } else {
         setPomoPhase("Work");
         setPomoSecondsLeft(pomWork * 60);
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          const me = participants.find((p) => p.id === selfId);
+          if (me && !me.isActive) {
+            wsRef.current.send(JSON.stringify({ type: "start_focus" }));
+          }
+        }
       }
     }
     return () => clearInterval(timer);
-  }, [pomoSecondsLeft, pomoRunning, pomoPhase, pomWork, pomBreak]);
+  }, [pomoSecondsLeft, pomoRunning, pomoPhase, pomWork, pomBreak, participants, selfId]);
+
+  const handleTogglePomo = () => {
+    const nextRunning = !pomoRunning;
+    setPomoRunning(nextRunning);
+    
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      const me = participants.find((p) => p.id === selfId);
+      if (me) {
+        if (nextRunning && pomoPhase === "Work" && !me.isActive) {
+          wsRef.current.send(JSON.stringify({ type: "start_focus" }));
+        } else if (!nextRunning && me.isActive) {
+          wsRef.current.send(JSON.stringify({ type: "stop_focus" }));
+        }
+      }
+    }
+  };
 
   // Synthesize beep alarm utilizing Web Audio osc interfaces
   const playPomoTransBeep = () => {
@@ -1390,6 +1457,21 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const handleAddMaterial = (title: string, url: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     wsRef.current.send(JSON.stringify({ type: "add_material", title, url }));
+  };
+
+  const handleAddTask = (subject: string, description: string, priority: "High" | "Medium" | "Low") => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(JSON.stringify({ type: "add_task", subject, description, priority }));
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(JSON.stringify({ type: "delete_task", taskId }));
+  };
+
+  const handleToggleTask = (taskId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(JSON.stringify({ type: "toggle_task", taskId }));
   };
 
   const handleDeleteMaterial = (materialId: string) => {
@@ -1612,12 +1694,13 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           </button>
 
           {/* Log out of session */}
-          <Link to="/">
-            <button className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-300 text-[11px] font-bold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer">
-              <LogOut className="h-3.5 w-3.5" />
-              <span>EXIT</span>
-            </button>
-          </Link>
+          <button 
+            onClick={logout}
+            className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-300 text-[11px] font-bold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span>SIGN OUT</span>
+          </button>
         </div>
       </header>
 
@@ -1627,6 +1710,50 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
         {/* LEFT COMPARTMENT - COLUMN 8 (Bento Space Workspace) */}
         <div className="lg:col-span-8 flex flex-col gap-6 h-full overflow-y-auto pr-1 scrollbar-none">
           
+          {/* STUDY ALIGNMENT NOTICE & MOTIVATIONAL CAROUSEL */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+            {/* Notification Widget */}
+            <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/15 rounded-2xl p-4 flex gap-3.5 items-center shadow-lg backdrop-blur-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full filter blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+                <Bell className="h-5 w-5 animate-bounce" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase tracking-widest font-extrabold text-amber-400">STUDY ALIGNMENT NOTICE</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                </div>
+                <h4 className="text-xs font-bold text-white mt-0.5">Study starts at 6:45 PM</h4>
+                <p className="text-zinc-400 text-[11px] leading-relaxed mt-0.5">
+                  Daily sync sessions begin promptly at <strong className="text-zinc-200">18:45 (6:45 PM)</strong>. Prepare your mind & environment.
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Quote Carousel */}
+            <div className="bg-gradient-to-r from-cyan-500/10 via-cyan-500/5 to-transparent border border-cyan-500/15 rounded-2xl p-4 flex gap-3.5 items-center shadow-lg backdrop-blur-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full filter blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 shadow-inner">
+                <Sparkles className="h-5 w-5 text-cyan-300 animate-pulse" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] uppercase tracking-widest font-extrabold text-cyan-400">DAILY CO-WORKING MOTIVATION</span>
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={currentQuoteIndex}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-[11px] italic text-zinc-200 mt-1 leading-relaxed line-clamp-2"
+                  >
+                    "{STUDY_QUOTES[currentQuoteIndex]}"
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+
           {/* TOP BENTO: POMODORO & STUDY TIMERS */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-white/[0.01] border border-white/[0.04] rounded-[28px] p-6 backdrop-blur-xl shadow-md">
             
@@ -1731,7 +1858,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setPomoRunning(!pomoRunning)}
+                    onClick={handleTogglePomo}
                     className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-sm ${
                       pomoRunning 
                         ? "border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20" 
@@ -1976,7 +2103,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
         <div className="lg:col-span-4 flex flex-col border border-white/[0.06] bg-zinc-950/40 backdrop-blur-3xl rounded-[28px] h-[calc(100vh-7.5rem)] overflow-hidden shadow-2xl">
           
           {/* TAB STRIP */}
-          <div className="grid grid-cols-4 bg-zinc-950/40 p-1.5 gap-1 border-b border-white/[0.04]">
+          <div className="grid grid-cols-5 bg-zinc-950/40 p-1.5 gap-1 border-b border-white/[0.04]">
             <button
               onClick={() => handleTabSelection("presence")}
               className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
@@ -2025,6 +2152,22 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             >
               <BookOpen className="h-4 w-4 mb-1" />
               <span>PDFs</span>
+            </button>
+            <button
+              onClick={() => handleTabSelection("tasks")}
+              className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider relative transition-all cursor-pointer ${
+                activeTab === "tasks" 
+                  ? "bg-white/[0.06] text-cyan-400 font-bold shadow-sm" 
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <CheckSquare className="h-4 w-4 mb-1" />
+              <span>Tasks</span>
+              {tasks.filter(t => !t.completedBy?.includes(selfId)).length > 0 && (
+                <span className="absolute top-1.5 right-1.5 bg-cyan-400 text-black text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
+                  {tasks.filter(t => !t.completedBy?.includes(selfId)).length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -2337,7 +2480,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             {activeTab === "materials" && (
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500 mb-3 select-none px-1">
-                  <span className="uppercase tracking-wider">PDF REPOSITORY ({materials.length})</span>
+                  <span className="uppercase tracking-wider font-extrabold text-zinc-400">PDF REPOSITORY ({materials.length})</span>
                   <span className="uppercase tracking-wider text-cyan-400">{myRole} LEVEL</span>
                 </div>
 
@@ -2484,6 +2627,394 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                       );
                     })
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* VIEWPORT: TODAY'S TASKS SUBJECT-WISE */}
+            {activeTab === "tasks" && (
+              <div className="flex flex-col flex-1 min-h-0 animate-fade-in px-1">
+                {/* Header Section */}
+                <div className="flex justify-between items-center mb-3 select-none">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Academic Tasks</span>
+                    <span className="text-sm font-black text-white uppercase tracking-tight flex items-center gap-1.5 mt-0.5">
+                      <CheckSquare className="h-4 w-4 text-cyan-400" />
+                      Study Plan ({tasks.length})
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-cyan-400 bg-cyan-400/5 border border-cyan-400/10 px-2 py-1 rounded-lg">
+                    {isStaff ? "Staff Panel Active" : "Student View"}
+                  </span>
+                </div>
+
+                {/* Progress bar and Motivational Card */}
+                {tasks.length > 0 && (() => {
+                  const completedCount = tasks.filter(t => t.completedBy?.includes(selfId)).length;
+                  const totalCount = tasks.length;
+                  const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                  
+                  let motivator = "No tasks started yet. Ready to learn? 🚀";
+                  if (percent > 0 && percent < 50) motivator = "Starting strong! Keep checking them off! 💪";
+                  else if (percent >= 50 && percent < 100) motivator = "Over halfway there! Excellent focus! 🔥";
+                  else if (percent === 100) motivator = "All tasks completed! Today was incredibly productive! 🎉";
+
+                  return (
+                    <div className="bg-gradient-to-br from-zinc-900/80 to-black/40 border border-white/[0.05] rounded-2xl p-4 mb-4 shadow-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/10 transition-all duration-500" />
+                      <div className="flex justify-between items-center text-xs font-bold mb-2.5 relative z-10">
+                        <span className="text-zinc-300 uppercase tracking-wide flex items-center gap-1.5 font-extrabold">
+                          <Award className="h-4 w-4 text-cyan-400" />
+                          Today's Progress
+                        </span>
+                        <span className="text-cyan-400 font-mono font-black text-xs">
+                          {completedCount} / {totalCount} Completed ({percent}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-zinc-950/80 h-3 rounded-full overflow-hidden border border-white/[0.04] p-0.5 relative z-10">
+                        <div 
+                          className="bg-gradient-to-r from-cyan-400 via-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_12px_rgba(34,211,238,0.4)]"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-zinc-400 font-bold mt-2.5 uppercase tracking-wide italic select-none">
+                        {motivator}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Staff Upload Task Section */}
+                {isStaff && (
+                  <div className="bg-zinc-950/40 border border-white/[0.06] rounded-2xl p-4.5 flex flex-col gap-3.5 mb-4 shadow-xl">
+                    <div className="flex items-center gap-2 text-[10px] text-cyan-400 font-black uppercase tracking-wider border-b border-white/[0.04] pb-2">
+                      <Cpu className="h-4 w-4" />
+                      <span>Create Subject Study Task</span>
+                    </div>
+
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!taskDesc.trim()) return;
+                        handleAddTask(taskSubject, taskDesc.trim(), taskPriority);
+                        setTaskDesc("");
+                      }}
+                      className="flex flex-col gap-3.5"
+                    >
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[9px] font-extrabold text-zinc-500 uppercase block mb-1">Select Subject</label>
+                          <select
+                            value={taskSubject}
+                            onChange={(e) => setTaskSubject(e.target.value)}
+                            className="w-full py-2 px-3 bg-zinc-900 border border-white/[0.08] focus:border-cyan-400 outline-none text-white text-xs rounded-xl transition-all cursor-pointer font-bold"
+                          >
+                            <option value="Mathematics">📐 Mathematics</option>
+                            <option value="Physics">⚛️ Physics</option>
+                            <option value="Chemistry">🧪 Chemistry</option>
+                            <option value="Biology">🧬 Biology</option>
+                            <option value="Computer Science">💻 Computer Science</option>
+                            <option value="English">📚 English</option>
+                            <option value="General Study">🎯 General Study</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[9px] font-extrabold text-zinc-500 uppercase block mb-1">Set Priority</label>
+                          <div className="grid grid-cols-3 bg-zinc-900 p-0.5 rounded-xl border border-white/[0.08] h-[34px]">
+                            {(["Low", "Medium", "High"] as const).map((p) => {
+                              const isActive = taskPriority === p;
+                              const colors = {
+                                Low: "text-cyan-400 border-cyan-500/20 bg-cyan-500/5",
+                                Medium: "text-amber-400 border-amber-500/20 bg-amber-500/5",
+                                High: "text-rose-400 border-rose-500/20 bg-rose-500/5"
+                              };
+                              return (
+                                <button
+                                  key={p}
+                                  type="button"
+                                  onClick={() => setTaskPriority(p)}
+                                  className={`text-[9px] font-extrabold uppercase rounded-lg transition-all cursor-pointer ${
+                                    isActive 
+                                      ? `${colors[p]} border font-black shadow-[0_0_8px_rgba(255,255,255,0.05)]` 
+                                      : "text-zinc-500 hover:text-zinc-300"
+                                  }`}
+                                >
+                                  {p}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[9px] font-extrabold text-zinc-500 uppercase block mb-1">Task Requirements</label>
+                        <textarea
+                          required
+                          rows={2}
+                          value={taskDesc}
+                          onChange={(e) => setTaskDesc(e.target.value)}
+                          placeholder="E.g. Solve exercises 1 to 5 from Section 4.2 of the Physics book."
+                          className="w-full py-2.5 px-3 bg-zinc-900 border border-white/[0.06] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none text-white text-xs rounded-xl placeholder:text-zinc-600 transition-all resize-none"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={!taskDesc.trim()}
+                        className="w-full py-2.5 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-[0.98]"
+                      >
+                        PUBLISH TASK FOR TODAY
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* ADVANCED MULTI-FILTERING PANEL */}
+                <div className="bg-zinc-950/20 border border-white/[0.04] rounded-2xl p-3 mb-4 space-y-2.5 shadow-inner">
+                  {/* Priority Pill Filters */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[8px] font-black uppercase tracking-wider text-zinc-500 px-1 select-none">Priority Filters</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(["All", "High", "Medium", "Low"] as const).map((f) => {
+                        const count = f === "All" 
+                          ? tasks.length 
+                          : tasks.filter(t => t.priority === f).length;
+                        const isActive = taskPriorityFilter === f;
+
+                        const badgeColors = {
+                          All: isActive ? "bg-white/[0.08] text-white border-white/[0.15]" : "text-zinc-400 hover:text-zinc-200 bg-white/[0.01] border-white/[0.04]",
+                          High: isActive ? "bg-rose-500/20 text-rose-400 border-rose-500/30" : "text-zinc-400 hover:text-zinc-200 bg-rose-500/5 border-rose-500/10",
+                          Medium: isActive ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "text-zinc-400 hover:text-zinc-200 bg-amber-500/5 border-amber-500/10",
+                          Low: isActive ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" : "text-zinc-400 hover:text-zinc-200 bg-cyan-500/5 border-cyan-500/10"
+                        };
+
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => setTaskPriorityFilter(f)}
+                            className={`px-2 py-1 text-[9px] font-extrabold uppercase rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${badgeColors[f]}`}
+                          >
+                            {f === "High" && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
+                            {f === "Medium" && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+                            {f === "Low" && <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />}
+                            <span>{f}</span>
+                            <span className="opacity-60 text-[8px] px-1 bg-black/40 rounded">({count})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Status Segment Filters */}
+                  <div className="flex flex-col gap-1 pt-1.5 border-t border-white/[0.03]">
+                    <span className="text-[8px] font-black uppercase tracking-wider text-zinc-500 px-1 select-none">Status Filter</span>
+                    <div className="grid grid-cols-3 bg-zinc-900/60 p-0.5 rounded-xl border border-white/[0.04]">
+                      {(["All", "Pending", "Completed"] as const).map((s) => {
+                        const isActive = taskStatusFilter === s;
+                        const count = s === "All" 
+                          ? tasks.length 
+                          : s === "Pending" 
+                            ? tasks.filter(t => !t.completedBy?.includes(selfId)).length
+                            : tasks.filter(t => t.completedBy?.includes(selfId)).length;
+
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => setTaskStatusFilter(s)}
+                            className={`py-1 text-[9px] font-extrabold uppercase rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                              isActive 
+                                ? "bg-white/[0.06] text-cyan-400 font-black border border-white/[0.04] shadow-sm" 
+                                : "text-zinc-500 hover:text-zinc-300"
+                            }`}
+                          >
+                            <span>{s}</span>
+                            <span className="text-[8px] opacity-60">({count})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tasks List */}
+                <div className="flex-1 overflow-y-auto space-y-4.5 mt-1 pr-1" style={{ maxHeight: "calc(100vh - 20rem)" }}>
+                  {(() => {
+                    const filteredTasks = tasks.filter(t => {
+                      if (taskPriorityFilter !== "All" && t.priority !== taskPriorityFilter) {
+                        return false;
+                      }
+                      const isCompleted = t.completedBy?.includes(selfId) || false;
+                      if (taskStatusFilter === "Pending" && isCompleted) return false;
+                      if (taskStatusFilter === "Completed" && !isCompleted) return false;
+                      return true;
+                    });
+
+                    if (filteredTasks.length === 0) {
+                      return (
+                        <div className="py-16 flex flex-col items-center justify-center text-center select-none text-zinc-500 gap-2 border border-white/[0.04] rounded-2xl bg-white/[0.01]">
+                          <CheckSquare className="h-8 w-8 text-zinc-700 opacity-50 stroke-[1.5] animate-bounce" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">No Matching Study Tasks Found</span>
+                          <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-semibold mt-1">Adjust filters or check back later</span>
+                        </div>
+                      );
+                    }
+
+                    // Group by subject
+                    const groupedTasks = filteredTasks.reduce((acc, t) => {
+                      if (!acc[t.subject]) acc[t.subject] = [];
+                      acc[t.subject].push(t);
+                      return acc;
+                    }, {} as Record<string, StudyTask[]>);
+
+                    return Object.entries(groupedTasks).map(([subject, subTasksVal]) => {
+                      const subTasks = subTasksVal as StudyTask[];
+                      return (
+                        <div key={subject} className="bg-gradient-to-br from-white/[0.01] to-black/20 rounded-2xl border border-white/[0.05] p-4 space-y-3.5 shadow-lg relative overflow-hidden">
+                          {/* Subject Header Banner */}
+                          <div className="flex justify-between items-center pb-2.5 border-b border-white/[0.04] select-none">
+                            <span className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                              {subject === "Mathematics" && "📐"}
+                              {subject === "Physics" && "⚛️"}
+                              {subject === "Chemistry" && "🧪"}
+                              {subject === "Biology" && "🧬"}
+                              {subject === "Computer Science" && "💻"}
+                              {subject === "English" && "📚"}
+                              {subject === "General Study" && "🎯"}
+                              {subject}
+                            </span>
+                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-900/90 border border-white/[0.06] px-2 py-1 rounded-lg">
+                              {subTasks.length} {subTasks.length === 1 ? "Task" : "Tasks"}
+                            </span>
+                          </div>
+
+                          {/* List of Tasks under this subject */}
+                          <div className="space-y-3">
+                            {subTasks.map((t) => {
+                              const isCompleted = t.completedBy?.includes(selfId) || false;
+                              
+                              // Color scheme based on priority
+                              const priorityColors = {
+                                High: {
+                                  border: isCompleted ? "border-rose-900/20 border-l-rose-500/50" : "border-rose-500/30 hover:border-rose-500/60 border-l-rose-500",
+                                  badge: "bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.1)]",
+                                  bg: "bg-rose-500/[0.01]"
+                                },
+                                Medium: {
+                                  border: isCompleted ? "border-amber-900/20 border-l-amber-500/50" : "border-amber-500/30 hover:border-amber-500/60 border-l-amber-500",
+                                  badge: "bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-[0_0_8px_rgba(245,158,11,0.1)]",
+                                  bg: "bg-amber-500/[0.01]"
+                                },
+                                Low: {
+                                  border: isCompleted ? "border-cyan-900/20 border-l-cyan-500/50" : "border-cyan-500/30 hover:border-cyan-500/60 border-l-cyan-500",
+                                  badge: "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_8px_rgba(6,182,212,0.1)]",
+                                  bg: "bg-cyan-500/[0.01]"
+                                }
+                              };
+
+                              const colors = priorityColors[t.priority] || priorityColors.Medium;
+
+                              return (
+                                <div 
+                                  key={t.id} 
+                                  className={`flex gap-3.5 items-start p-3.5 rounded-xl border border-l-4 transition-all relative overflow-hidden ${colors.bg} ${colors.border}`}
+                                >
+                                  {/* Custom Styled Interactive Checkbox */}
+                                  <button
+                                    onClick={() => handleToggleTask(t.id)}
+                                    className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center transition-all cursor-pointer border shrink-0 ${
+                                      isCompleted 
+                                        ? "bg-emerald-500 border-emerald-400 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]" 
+                                        : "bg-zinc-950 border-white/[0.08] text-transparent hover:border-zinc-500 hover:bg-zinc-900"
+                                    }`}
+                                  >
+                                    <Check className="h-3.5 w-3.5 stroke-[3]" />
+                                  </button>
+
+                                  {/* Task Core info */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      {/* Priority Badge */}
+                                      <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${colors.badge}`}>
+                                        {t.priority} Priority
+                                      </span>
+                                    </div>
+
+                                    <p className={`text-xs font-semibold leading-relaxed mt-2 transition-all ${
+                                      isCompleted ? "line-through text-zinc-500 font-medium" : "text-zinc-200"
+                                    }`}>
+                                      {t.description}
+                                    </p>
+
+                                    <div className="mt-2.5 flex flex-wrap items-center gap-3 text-[9px] font-bold text-zinc-500 uppercase tracking-wide border-t border-white/[0.02] pt-2">
+                                      <span>By {t.uploadedBy}</span>
+                                      <span className="w-1 h-1 rounded-full bg-zinc-800" />
+                                      <span>
+                                        {new Date(t.uploadedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                                      </span>
+
+                                      {/* Multi-user live completion indicator */}
+                                      {t.completedBy && t.completedBy.length > 0 && (
+                                        <div className="flex items-center gap-1.5 ml-auto">
+                                          <div className="flex -space-x-1.5 overflow-hidden">
+                                            {t.completedBy.slice(0, 3).map((userId) => {
+                                              const p = participants.find(part => part.id === userId);
+                                              const initial = p ? p.username.charAt(0).toUpperCase() : "?";
+                                              const isMe = userId === selfId;
+                                              return (
+                                                <div 
+                                                  key={userId}
+                                                  title={p ? p.username : "Student"}
+                                                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black text-black border border-zinc-950 select-none ${
+                                                    isMe ? "bg-cyan-400" : "bg-zinc-400"
+                                                  }`}
+                                                >
+                                                  {initial}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                          {t.completedBy.length > 3 && (
+                                            <span className="text-[8px] text-zinc-400 font-black">
+                                              +{t.completedBy.length - 3}
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Admin Detail panel */}
+                                    {isStaff && (
+                                      <div className="mt-2 flex items-center gap-2 select-none">
+                                        <div className="text-[8px] text-zinc-400 font-black bg-zinc-900/80 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-white/[0.04]">
+                                          <Users className="h-3 w-3 text-indigo-400" />
+                                          <span>
+                                            COMPLETED BY: {t.completedBy?.length || 0} / {participants.length} STUDENTS
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Delete Task button */}
+                                  {isStaff && (
+                                    <button
+                                      onClick={() => handleDeleteTask(t.id)}
+                                      className="p-1.5 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/10 hover:border-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors shrink-0 cursor-pointer self-start ml-1.5"
+                                      title="DELETE TASK"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             )}

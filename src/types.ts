@@ -62,6 +62,16 @@ export interface StudyMaterial {
   uploadedAt: string;
 }
 
+export interface StudyTask {
+  id: string;
+  subject: string;
+  description: string;
+  priority: "High" | "Medium" | "Low";
+  uploadedBy: string;
+  uploadedAt: string;
+  completedBy: string[]; // array of userIds who completed it
+}
+
 export interface Message {
   id: string;
   userId: string;
@@ -75,6 +85,7 @@ export interface SessionState {
   participants: Record<string, Participant>;
   messages: Message[];
   materials: StudyMaterial[];
+  tasks?: StudyTask[];
 }
 
 // WebSocket client-to-server messages
@@ -86,16 +97,20 @@ export type ClientMessage =
   | { type: "kick"; targetId: string }
   | { type: "add_material"; title: string; url: string }
   | { type: "delete_material"; materialId: string }
+  | { type: "add_task"; subject: string; description: string; priority: "High" | "Medium" | "Low" }
+  | { type: "delete_task"; taskId: string }
+  | { type: "toggle_task"; taskId: string }
   | { type: "update_role"; targetId: string; role: "admin" | "co-host" | "user" }
   | { type: "ping"; timestamp: number };
 
 // WebSocket server-to-client messages
 export type ServerMessage =
-  | { type: "joined"; selfId: string; config: RoomConfig; participants: Participant[]; messages: Message[]; materials?: StudyMaterial[] }
+  | { type: "joined"; selfId: string; config: RoomConfig; participants: Participant[]; messages: Message[]; materials?: StudyMaterial[]; tasks?: StudyTask[] }
   | { type: "participants_update"; participants: Participant[] }
   | { type: "chat_message_received"; message: Message }
   | { type: "kicked" }
   | { type: "replaced" }
   | { type: "materials_update"; materials: StudyMaterial[] }
+  | { type: "tasks_update"; tasks: StudyTask[] }
   | { type: "error"; message: string }
   | { type: "pong"; timestamp: number };

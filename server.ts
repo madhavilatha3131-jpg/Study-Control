@@ -69,7 +69,8 @@ function readSessions(): Record<string, SessionState> {
         },
         participants: {},
         messages: [],
-        materials: []
+        materials: [],
+        tasks: []
       };
       fs.writeFileSync(SESSIONS_PATH, JSON.stringify(sessions, null, 2));
     }
@@ -91,7 +92,8 @@ function readSessions(): Record<string, SessionState> {
       },
       participants: {},
       messages: [],
-      materials: []
+      materials: [],
+      tasks: []
     };
     try {
       fs.writeFileSync(SESSIONS_PATH, JSON.stringify(sessions, null, 2));
@@ -296,19 +298,19 @@ app.get("/api/auth/me", authenticateToken, (req: any, res) => {
   return res.json({ id: user.id, username: user.username, email: user.email });
 });
 
-// Request password reset code via email flow
+// Request password reset code via username flow
 app.post("/api/auth/forgot-password", async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Email address is required" });
+    const { username } = req.body;
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
     }
 
     const users = readUsers();
-    const userIndex = users.findIndex((u) => u.email && u.email.toLowerCase() === email.trim().toLowerCase());
+    const userIndex = users.findIndex((u) => u.username.toLowerCase() === username.trim().toLowerCase());
 
     if (userIndex === -1) {
-      return res.status(404).json({ error: "No account registered with this email address" });
+      return res.status(404).json({ error: "No account registered with this username" });
     }
 
     const user = users[userIndex];
@@ -321,10 +323,10 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
     writeUsers(users);
 
-    // Simulate sending email by printing code to stdout console
+    // Simulate sending recovery notice
     console.log(`=========================================`);
-    console.log(`[EMAIL SIMULATOR] Dispatching Reset Email`);
-    console.log(`To: ${user.email}`);
+    console.log(`[RECOVERY SIMULATOR] Dispatching Reset Notice`);
+    console.log(`Username: ${user.username}`);
     console.log(`Verification Code: ${verificationCode}`);
     console.log(`=========================================`);
 
@@ -339,13 +341,13 @@ app.post("/api/auth/forgot-password", async (req, res) => {
   }
 });
 
-// Securely override password using email verification code
+// Securely override password using verification code
 app.post("/api/auth/reset-password", async (req, res) => {
   try {
-    const { email, code, newPassword } = req.body;
+    const { username, code, newPassword } = req.body;
 
-    if (!email || !code || !newPassword) {
-      return res.status(400).json({ error: "Email, verification code, and new password are required" });
+    if (!username || !code || !newPassword) {
+      return res.status(400).json({ error: "Username, verification code, and new password are required" });
     }
 
     if (newPassword.length < 6) {
@@ -353,10 +355,10 @@ app.post("/api/auth/reset-password", async (req, res) => {
     }
 
     const users = readUsers();
-    const userIndex = users.findIndex((u) => u.email && u.email.toLowerCase() === email.trim().toLowerCase());
+    const userIndex = users.findIndex((u) => u.username.toLowerCase() === username.trim().toLowerCase());
 
     if (userIndex === -1) {
-      return res.status(404).json({ error: "No account registered with this email" });
+      return res.status(404).json({ error: "No account registered with this username" });
     }
 
     const user = users[userIndex];
@@ -509,6 +511,7 @@ app.post("/api/sessions", authenticateToken, (req: any, res) => {
       participants: {},
       messages: [],
       materials: [],
+      tasks: [],
     };
 
     writeSessions(sessions);
@@ -929,6 +932,7 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
           participants: participantList,
           messages: session.messages,
           materials: session.materials || [],
+          tasks: session.tasks || [],
         }));
 
         // Broadcast presence update to others
@@ -1119,6 +1123,106 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
         broadcastToRoom(joinedRoomCode, {
           type: "materials_update",
           materials: session.materials
+        });
+      }
+
+      else if (msg.type === "add_task") {
+        if (!joinedRoomCode) return;
+        const { subject, description, priority } = msg;
+        if (!subject || !description) return;
+
+        const sessions = readSessions();
+        const session = sessions[joinedRoomCode];
+        if (!session) return;
+
+        const senderPart = session.participants[userId];
+        const canUpload = senderPart && (senderPart.role === "admin" || senderPart.role === "co-host");
+        if (!canUpload) {
+          ws.send(JSON.stringify({ type: "error", message: "Only Admin and Co-host roles can upload tasks" }));
+          return;
+        }
+
+        if (!session.tasks) {
+          session.tasks = [];
+        }
+
+        const newTask = {
+          id: Math.random().toString(36).substring(2, 11),
+          subject: subject.trim(),
+          description: description.trim(),
+          priority: priority || "Medium",
+          uploadedBy: username,
+          uploadedAt: new Date().toISOString(),
+          completedBy: []
+        };
+
+        session.tasks.push(newTask);
+        sessions[joinedRoomCode] = session;
+        writeSessions(sessions);
+
+        broadcastToRoom(joinedRoomCode, {
+          type: "tasks_update",
+          tasks: session.tasks
+        });
+      }
+
+      else if (msg.type === "delete_task") {
+        if (!joinedRoomCode) return;
+        const { taskId } = msg;
+
+        const sessions = readSessions();
+        const session = sessions[joinedRoomCode];
+        if (!session || !session.tasks) return;
+
+        const senderPart = session.participants[userId];
+        const canDelete = senderPart && (senderPart.role === "admin" || senderPart.role === "co-host");
+        if (!canDelete) {
+          ws.send(JSON.stringify({ type: "error", message: "Only Admin and Co-host roles can delete tasks" }));
+          return;
+        }
+
+        session.tasks = session.tasks.filter((t) => t.id !== taskId);
+        sessions[joinedRoomCode] = session;
+        writeSessions(sessions);
+
+        broadcastToRoom(joinedRoomCode, {
+          type: "tasks_update",
+          tasks: session.tasks
+        });
+      }
+
+      else if (msg.type === "toggle_task") {
+        if (!joinedRoomCode) return;
+        const { taskId } = msg;
+
+        const sessions = readSessions();
+        const session = sessions[joinedRoomCode];
+        if (!session) return;
+
+        if (!session.tasks) {
+          session.tasks = [];
+        }
+
+        const task = session.tasks.find((t) => t.id === taskId);
+        if (!task) return;
+
+        if (!task.completedBy) {
+          task.completedBy = [];
+        }
+
+        const idx = task.completedBy.indexOf(userId);
+        if (idx > -1) {
+          task.completedBy.splice(idx, 1);
+        } else {
+          task.completedBy.push(userId);
+        }
+
+        sessions[joinedRoomCode] = session;
+        writeSessions(sessions);
+
+        broadcastToRoom(joinedRoomCode, {
+          type: "tasks_update",
+          tasks: session.tasks
         });
       }
 
