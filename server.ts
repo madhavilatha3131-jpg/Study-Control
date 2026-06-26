@@ -1324,4 +1324,66 @@ async function mountViteMiddleware() {
 }
 
 mountViteMiddleware();
+
+// --- DAILY SCHEDULER & AUTO RESET ENGINE ---
+let lastTaskResetDay = ""; // Tracks last day reset occurred (format: YYYY-MM-DD)
+
+function checkAndResetDailyTasks() {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentDayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+
+  // Reset at exactly 06:45 AM local time
+  if (currentHour === 6 && currentMinute === 45 && lastTaskResetDay !== currentDayStr) {
+    lastTaskResetDay = currentDayStr;
+    console.log(`☀️ [AUTO RESET ENGINE] 06:45 AM reached. Automatically resetting all completed study tasks...`);
+    
+    try {
+      const sessions = readSessions();
+      let updated = false;
+      for (const code of Object.keys(sessions)) {
+        const session = sessions[code];
+        if (session && session.tasks && session.tasks.length > 0) {
+          session.tasks.forEach((task) => {
+            task.completedBy = []; // Reset completed list to empty (unchecked status)
+          });
+          updated = true;
+          
+          // Broadcast to any active participants connected in the room
+          broadcastToRoom(code, {
+            type: "tasks_update",
+            tasks: session.tasks,
+          });
+          
+          // Inject a professional system notice inside the chat logs
+          const systemMsg = {
+            id: `sys-reset-${Date.now()}`,
+            userId: "system",
+            username: "SYSTEM RESET",
+            text: "☀️ 6:45 AM Daily Morning Reset: All co-working checklist tasks have been set to active. Good luck studying today!",
+            timestamp: new Date().toISOString(),
+          };
+          session.messages.push(systemMsg);
+          if (session.messages.length > 150) session.messages.shift();
+          
+          broadcastToRoom(code, {
+            type: "chat_message_received",
+            message: systemMsg,
+          });
+        }
+      }
+      
+      if (updated) {
+        writeSessions(sessions);
+      }
+    } catch (err) {
+      console.error("Auto reset scheduler failed:", err);
+    }
+  }
+}
+
+// Check every 10 seconds for precise triggering
+setInterval(checkAndResetDailyTasks, 10000);
+
 export default server;

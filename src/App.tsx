@@ -262,9 +262,16 @@ function LoginPage() {
 
           {/* Elegant Alignment Alert & Quote banner */}
           <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-2.5 select-none text-left">
-            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-400">
-              <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
-              <span className="text-[10px] font-bold tracking-wider uppercase">Study alignment: Daily 6:45 PM (18:45)</span>
+            <div className="flex flex-col gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-400">
+              <div className="flex items-center gap-1.5">
+                <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
+                <span className="text-[10px] font-black tracking-widest uppercase">CO-WORKING ALIGNMENT TIMES</span>
+              </div>
+              <p className="text-[11px] text-zinc-300 leading-normal pl-5">
+                • Morning: <strong className="text-white">6:20 AM</strong><br />
+                • Evening: <strong className="text-white">6:45 PM</strong><br />
+                • Daily Reset: <strong className="text-amber-300">6:45 AM</strong> (All Tasks Auto-Reset)
+              </p>
             </div>
             <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-3 flex gap-2.5 items-start">
               <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0 mt-0.5" />
@@ -445,9 +452,16 @@ function RegisterPage() {
 
           {/* Elegant Alignment Alert & Quote banner */}
           <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-2.5 select-none text-left">
-            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-400">
-              <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
-              <span className="text-[10px] font-bold tracking-wider uppercase">Study alignment: Daily 6:45 PM (18:45)</span>
+            <div className="flex flex-col gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-400">
+              <div className="flex items-center gap-1.5">
+                <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
+                <span className="text-[10px] font-black tracking-widest uppercase">CO-WORKING ALIGNMENT TIMES</span>
+              </div>
+              <p className="text-[11px] text-zinc-300 leading-normal pl-5">
+                • Morning: <strong className="text-white">6:20 AM</strong><br />
+                • Evening: <strong className="text-white">6:45 PM</strong><br />
+                • Daily Reset: <strong className="text-amber-300">6:45 AM</strong> (All Tasks Auto-Reset)
+              </p>
             </div>
             <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-3 flex gap-2.5 items-start">
               <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0 mt-0.5" />
@@ -853,6 +867,28 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const [activeSecureMaterial, setActiveSecureMaterial] = useState<StudyMaterial | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [notifPermission, setNotifPermission] = useState<"default" | "granted" | "denied">(
+    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "default"
+  );
+
+  const requestNotificationAccess = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      alert("System notifications are not fully supported on this browser.");
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      setNotifPermission(permission);
+      if (permission === "granted") {
+        new Notification("🏆 Toppers Study Co-working Active!", {
+          body: "Sync co-working reminders are active daily at 06:20 AM and 06:45 PM. Consistent work yields stunning results!",
+          icon: "/favicon.ico"
+        });
+      }
+    } catch (e) {
+      console.error("Failed to request notifications", e);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1431,14 +1467,34 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
   // Focus controllers
   const toggleFocusStatus = () => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     const me = participants.find((p) => p.id === selfId);
     if (!me) return;
 
-    if (me.isActive) {
-      wsRef.current.send(JSON.stringify({ type: "stop_focus" }));
-    } else {
-      wsRef.current.send(JSON.stringify({ type: "start_focus" }));
+    const nextActive = !me.isActive;
+    
+    // Optimistically update local participant state so the timer starts instantly on user interaction
+    setParticipants((prev) =>
+      prev.map((p) => {
+        if (p.id === selfId) {
+          return {
+            ...p,
+            isActive: nextActive,
+            focusStartedAt: nextActive ? new Date().toISOString() : null,
+            totalSeconds: p.totalSeconds + (!nextActive && p.focusStartedAt ? Math.floor((Date.now() - new Date(p.focusStartedAt).getTime()) / 1000) : 0),
+            dailySeconds: (p.dailySeconds || 0) + (!nextActive && p.focusStartedAt ? Math.floor((Date.now() - new Date(p.focusStartedAt).getTime()) / 1000) : 0),
+          };
+        }
+        return p;
+      })
+    );
+
+    // Send update over WebSocket if available
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      if (me.isActive) {
+        wsRef.current.send(JSON.stringify({ type: "stop_focus" }));
+      } else {
+        wsRef.current.send(JSON.stringify({ type: "start_focus" }));
+      }
     }
   };
 
@@ -1720,12 +1776,12 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-widest font-extrabold text-amber-400">STUDY ALIGNMENT NOTICE</span>
+                  <span className="text-[10px] uppercase tracking-widest font-extrabold text-amber-400">STUDY ALIGNMENT TIMES</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                 </div>
-                <h4 className="text-xs font-bold text-white mt-0.5">Study starts at 6:45 PM</h4>
+                <h4 className="text-xs font-bold text-white mt-0.5">Morning 6:20 AM • Evening 6:45 PM</h4>
                 <p className="text-zinc-400 text-[11px] leading-relaxed mt-0.5">
-                  Daily sync sessions begin promptly at <strong className="text-zinc-200">18:45 (6:45 PM)</strong>. Prepare your mind & environment.
+                  Sessions begin promptly at <strong className="text-zinc-200">06:20</strong> and <strong className="text-zinc-200">18:45</strong>. Daily tasks auto-reset at <strong className="text-amber-400 font-semibold">6:45 AM</strong>.
                 </p>
               </div>
             </div>
@@ -1754,12 +1810,40 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             </div>
           </div>
 
+          {/* REAL BROWSER NOTIFICATION PERMISSION WIDGET */}
+          {notifPermission !== "granted" && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg shrink-0 select-none relative overflow-hidden"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                  <Bell className="h-4.5 w-4.5 animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Enable High-Priority Co-Working Alerts</h4>
+                  <p className="text-zinc-400 text-[11px] mt-0.5 leading-relaxed">
+                    Don't miss the morning study session at <strong className="text-indigo-300">6:20 AM</strong>. Enable standard browser notifications.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={requestNotificationAccess}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:scale-95 text-white font-extrabold text-[11px] uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Allow Notifications
+              </button>
+            </motion.div>
+          )}
+
           {/* TOP BENTO: POMODORO & STUDY TIMERS */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-white/[0.01] border border-white/[0.04] rounded-[28px] p-6 backdrop-blur-xl shadow-md">
             
             {/* Visual Circular Gauge Section (Left Col) */}
             <div className="md:col-span-5 flex flex-col items-center justify-center p-4 border-r border-white/[0.06]">
-              <div className="relative w-44 h-44 flex items-center justify-center select-none">
+              {/* Force re-render of this section on every ticker step by injecting ticker key */}
+              <div key={`timer-gauge-${ticker}`} className="relative w-44 h-44 flex items-center justify-center select-none">
                 {/* SVG circular concentric rings */}
                 <svg className="w-full h-full -rotate-90">
                   {/* Background Circle track */}
@@ -1780,9 +1864,21 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     strokeWidth="8"
                     fill="transparent"
                     strokeDasharray={477.5}
-                    strokeDashoffset={
-                      477.5 - (((pomoRunning ? (pomoPhase === "Work" ? pomWork * 60 : pomBreak * 60) - pomoSecondsLeft : 0) / (pomoPhase === "Work" ? pomWork * 60 : pomBreak * 60 || 1)) * 477.5)
-                    }
+                    strokeDashoffset={(() => {
+                      if (pomoRunning) {
+                        const maxSecs = pomoPhase === "Work" ? pomWork * 60 : pomBreak * 60 || 1;
+                        const elapsed = maxSecs - pomoSecondsLeft;
+                        const pct = Math.min(1, Math.max(0, elapsed / maxSecs));
+                        return 477.5 - (pct * 477.5);
+                      } else if (mePart?.isActive) {
+                        // Normal active focus session: animate based on a standard 60-min cycle (3600 seconds)
+                        const maxSecs = (pomWork || 25) * 60;
+                        const elapsed = myLiveSeconds % maxSecs;
+                        const pct = Math.min(1, Math.max(0, elapsed / maxSecs));
+                        return 477.5 - (pct * 477.5);
+                      }
+                      return 477.5; // empty when idle
+                    })()}
                     strokeLinecap="round"
                     style={{
                       filter: "drop-shadow(0 0 6px rgba(34, 211, 238, 0.45))"
