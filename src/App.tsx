@@ -1407,6 +1407,15 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     return secs;
   };
 
+  const getLiveDailyFocusTime = (part: Participant) => {
+    let secs = part.dailySeconds || 0;
+    if (part.isActive && part.focusStartedAt) {
+      const elapsed = Math.floor((Date.now() - new Date(part.focusStartedAt).getTime()) / 1000);
+      secs += Math.max(0, elapsed);
+    }
+    return secs;
+  };
+
   const formatSecondsToClock = (total: number) => {
     const hh = Math.floor(total / 3600);
     const mm = Math.floor((total % 3600) / 60);
@@ -1663,7 +1672,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     {pomoRunning ? formatSecondsToClock(pomoSecondsLeft) : formatSecondsToClock(myLiveSeconds)}
                   </span>
                   <span className="text-[9px] text-zinc-400/80 mt-1 font-medium">
-                    TODAY: {formatSecondsToClock(mePart?.dailySeconds || 0)}
+                    TODAY: {formatSecondsToClock(mePart ? getLiveDailyFocusTime(mePart) : 0)}
                   </span>
                 </div>
               </div>

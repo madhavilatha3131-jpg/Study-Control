@@ -1166,25 +1166,30 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
       roomConns.splice(idx, 1);
     }
 
-    // Stop and save focus time immediately to prevent leakage of clock cycles
-    stopAndSaveFocusTime(userId, joinedRoomCode);
+    // Check if there is still an active connection for this user
+    const hasOtherConnection = roomConns.some((c) => c.userId === userId && c.socket !== ws);
 
-    // Turn participant offline but keep record so progress is kept
-    const sessions = readSessions();
-    const session = sessions[joinedRoomCode];
-    if (session) {
-      const part = session.participants[userId];
-      if (part) {
-        part.isOffline = true;
-        part.isActive = false;
-        part.focusStartedAt = null;
-        sessions[joinedRoomCode] = session;
-        writeSessions(sessions);
+    if (!hasOtherConnection) {
+      // Stop and save focus time immediately to prevent leakage of clock cycles
+      stopAndSaveFocusTime(userId, joinedRoomCode);
 
-        broadcastToRoom(joinedRoomCode, {
-          type: "participants_update",
-          participants: Object.values(session.participants),
-        });
+      // Turn participant offline but keep record so progress is kept
+      const sessions = readSessions();
+      const session = sessions[joinedRoomCode];
+      if (session) {
+        const part = session.participants[userId];
+        if (part) {
+          part.isOffline = true;
+          part.isActive = false;
+          part.focusStartedAt = null;
+          sessions[joinedRoomCode] = session;
+          writeSessions(sessions);
+
+          broadcastToRoom(joinedRoomCode, {
+            type: "participants_update",
+            participants: Object.values(session.participants),
+          });
+        }
       }
     }
   });
