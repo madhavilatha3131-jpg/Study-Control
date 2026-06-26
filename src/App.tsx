@@ -2666,7 +2666,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 )}
 
                 {/* PDF materials list */}
-                <div className="flex-1 overflow-y-auto space-y-2.5 mt-1 pr-1" style={{ maxHeight: "calc(100vh - 19rem)" }}>
+                <div className="space-y-2.5 mt-1 pr-1">
                   {materials.length === 0 ? (
                     <div className="py-20 flex flex-col items-center justify-center text-center select-none text-zinc-500 gap-2">
                       <FileText className="h-8 w-8 text-zinc-600 opacity-60 stroke-[1.5]" />
@@ -2935,7 +2935,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 </div>
 
                 {/* Tasks List */}
-                <div className="flex-1 overflow-y-auto space-y-4.5 mt-1 pr-1" style={{ maxHeight: "calc(100vh - 20rem)" }}>
+                <div className="space-y-4.5 mt-1 pr-1">
                   {(() => {
                     const filteredTasks = tasks.filter(t => {
                       if (taskPriorityFilter !== "All" && t.priority !== taskPriorityFilter) {
@@ -3019,7 +3019,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                                   {/* Custom Styled Interactive Checkbox */}
                                   <button
                                     onClick={() => handleToggleTask(t.id)}
-                                    className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center transition-all cursor-pointer border shrink-0 ${
+                                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer border shrink-0 ${
                                       isCompleted 
                                         ? "bg-emerald-500 border-emerald-400 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]" 
                                         : "bg-zinc-950 border-white/[0.08] text-transparent hover:border-zinc-500 hover:bg-zinc-900"
