@@ -2867,98 +2867,21 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                   </div>
                 )}
 
-                {/* ADVANCED MULTI-FILTERING PANEL */}
-                <div className="bg-zinc-950/20 border border-white/[0.04] rounded-2xl p-3 mb-4 space-y-2.5 shadow-inner">
-                  {/* Priority Pill Filters */}
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[8px] font-black uppercase tracking-wider text-zinc-500 px-1 select-none">Priority Filters</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(["All", "High", "Medium", "Low"] as const).map((f) => {
-                        const count = f === "All" 
-                          ? tasks.length 
-                          : tasks.filter(t => t.priority === f).length;
-                        const isActive = taskPriorityFilter === f;
-
-                        const badgeColors = {
-                          All: isActive ? "bg-white/[0.08] text-white border-white/[0.15]" : "text-zinc-400 hover:text-zinc-200 bg-white/[0.01] border-white/[0.04]",
-                          High: isActive ? "bg-rose-500/20 text-rose-400 border-rose-500/30" : "text-zinc-400 hover:text-zinc-200 bg-rose-500/5 border-rose-500/10",
-                          Medium: isActive ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "text-zinc-400 hover:text-zinc-200 bg-amber-500/5 border-amber-500/10",
-                          Low: isActive ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" : "text-zinc-400 hover:text-zinc-200 bg-cyan-500/5 border-cyan-500/10"
-                        };
-
-                        return (
-                          <button
-                            key={f}
-                            onClick={() => setTaskPriorityFilter(f)}
-                            className={`px-2 py-1 text-[9px] font-extrabold uppercase rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${badgeColors[f]}`}
-                          >
-                            {f === "High" && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
-                            {f === "Medium" && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-                            {f === "Low" && <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />}
-                            <span>{f}</span>
-                            <span className="opacity-60 text-[8px] px-1 bg-black/40 rounded">({count})</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Status Segment Filters */}
-                  <div className="flex flex-col gap-1 pt-1.5 border-t border-white/[0.03]">
-                    <span className="text-[8px] font-black uppercase tracking-wider text-zinc-500 px-1 select-none">Status Filter</span>
-                    <div className="grid grid-cols-3 bg-zinc-900/60 p-0.5 rounded-xl border border-white/[0.04]">
-                      {(["All", "Pending", "Completed"] as const).map((s) => {
-                        const isActive = taskStatusFilter === s;
-                        const count = s === "All" 
-                          ? tasks.length 
-                          : s === "Pending" 
-                            ? tasks.filter(t => !t.completedBy?.includes(selfId)).length
-                            : tasks.filter(t => t.completedBy?.includes(selfId)).length;
-
-                        return (
-                          <button
-                            key={s}
-                            onClick={() => setTaskStatusFilter(s)}
-                            className={`py-1 text-[9px] font-extrabold uppercase rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                              isActive 
-                                ? "bg-white/[0.06] text-cyan-400 font-black border border-white/[0.04] shadow-sm" 
-                                : "text-zinc-500 hover:text-zinc-300"
-                            }`}
-                          >
-                            <span>{s}</span>
-                            <span className="text-[8px] opacity-60">({count})</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Tasks List */}
-                <div className="space-y-4.5 mt-1 pr-1">
+                <div className="space-y-4.5 mt-1 pr-1 pb-16 overflow-y-auto">
                   {(() => {
-                    const filteredTasks = tasks.filter(t => {
-                      if (taskPriorityFilter !== "All" && t.priority !== taskPriorityFilter) {
-                        return false;
-                      }
-                      const isCompleted = t.completedBy?.includes(selfId) || false;
-                      if (taskStatusFilter === "Pending" && isCompleted) return false;
-                      if (taskStatusFilter === "Completed" && !isCompleted) return false;
-                      return true;
-                    });
-
-                    if (filteredTasks.length === 0) {
+                    if (tasks.length === 0) {
                       return (
                         <div className="py-16 flex flex-col items-center justify-center text-center select-none text-zinc-500 gap-2 border border-white/[0.04] rounded-2xl bg-white/[0.01]">
                           <CheckSquare className="h-8 w-8 text-zinc-700 opacity-50 stroke-[1.5] animate-bounce" />
-                          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">No Matching Study Tasks Found</span>
-                          <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-semibold mt-1">Adjust filters or check back later</span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">No Study Tasks Created Yet</span>
+                          <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-semibold mt-1 font-mono">Create tasks above to guide your study</span>
                         </div>
                       );
                     }
 
                     // Group by subject
-                    const groupedTasks = filteredTasks.reduce((acc, t) => {
+                    const groupedTasks = tasks.reduce((acc, t) => {
                       if (!acc[t.subject]) acc[t.subject] = [];
                       acc[t.subject].push(t);
                       return acc;
