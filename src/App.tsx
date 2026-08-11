@@ -4,7 +4,7 @@ import {
   Users, Trophy, MessageSquare, LogOut, Copy, Check, Play, Square,
   Volume2, ShieldAlert, Wifi, WifiOff, Paperclip, Send, Maximize2,
   Trash2, Award, Clock, HelpCircle, Lock, User as UserIcon, BookOpen, KeyRound, Cpu, X, Upload, ExternalLink, Compass, ChevronRight, FileText, Smartphone,
-  Home, RefreshCw, Bell, AlertTriangle, ShieldCheck, CheckSquare, Sparkles
+  Home, RefreshCw, Bell, AlertTriangle, ShieldCheck, CheckSquare, Sparkles, Flame, CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Participant, Message, RoomConfig, User, StudyMaterial, StudyTask } from "./types";
@@ -111,10 +111,10 @@ function GuardedRoute({ path, component: Component }: { path: string; component:
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#060608] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-cyan-950 border-t-[#00ffff] rounded-full spin-cw" />
-          <span className="space-mono text-xs text-cyan-400 select-none tracking-widest">// DECRYPTION ENGINE LOADING...</span>
+          <div className="w-10 h-10 border-2 border-zinc-200 border-t-cyan-600 rounded-full spin-cw" />
+          <span className="space-mono text-xs text-zinc-600 select-none tracking-widest">// LOADING WORKSPACE...</span>
         </div>
       </div>
     );
@@ -159,64 +159,63 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-gradient-to-tr from-[#080711] via-[#0e0c1b] to-[#040307] text-white font-sans">
-      {/* Vivo style dynamic smooth glass blobs */}
-      <div className="absolute top-[15%] left-[20%] w-[380px] h-[380px] rounded-full bg-cyan-500 opacity-10 filter blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full bg-[#8c46ff] opacity-10 filter blur-[120px] pointer-events-none" />
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-zinc-50 text-zinc-900 font-sans">
+      <div className="absolute top-[15%] left-[20%] w-[380px] h-[380px] rounded-full bg-cyan-500/10 filter blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full bg-indigo-500/10 filter blur-[120px] pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="w-full max-w-[420px] bg-white/[0.03] backdrop-blur-[24px] border border-white/[0.08] rounded-[32px] p-8 shadow-[0_24px_50px_rgba(0,0,0,0.4)] flex flex-col z-10"
+        className="w-full max-w-[420px] bg-white border border-zinc-200 rounded-[32px] p-8 shadow-xl flex flex-col z-10"
       >
         {/* Core Top Title Panel */}
         <div className="flex flex-col items-center justify-center pb-6">
           <motion.div 
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-400 to-[#8c46ff] flex items-center justify-center shadow-lg shadow-cyan-500/25 mb-4"
+            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-600/20 mb-4"
           >
-            <Cpu className="w-6 h-6 text-black font-bold" />
+            <Cpu className="w-6 h-6 text-white font-bold" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400 text-center select-none">
-            STUDY<span className="text-cyan-400">CTRL</span>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 text-center select-none">
+            STUDY<span className="text-cyan-600">CTRL</span>
           </h1>
           <p className="text-[11px] text-zinc-500 tracking-wider mt-1 select-none font-medium uppercase">
-            // NEXT GENERATION WORKSPACE
+            Workspace Access
           </p>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+            <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
               Username
             </label>
             <div className="relative flex items-center">
-              <UserIcon className="absolute left-4 w-4 h-4 text-zinc-500" />
+              <UserIcon className="absolute left-4 w-4 h-4 text-zinc-400" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter username"
-                className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 py-3.5 pl-11 pr-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-cyan-500/10"
+                className="w-full bg-zinc-50 border border-zinc-200 focus:border-cyan-600 py-3.5 pl-11 pr-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-cyan-500/10"
                 id="login-username"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+            <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
               Password
             </label>
             <div className="relative flex items-center">
-              <KeyRound className="absolute left-4 w-4 h-4 text-zinc-500" />
+              <KeyRound className="absolute left-4 w-4 h-4 text-zinc-400" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full bg-black/40 border border-white/10 focus:border-cyan-400/60 py-3.5 pl-11 pr-4 rounded-2xl text-sm tracking-widest placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-cyan-500/10"
+                className="w-full bg-zinc-50 border border-zinc-200 focus:border-cyan-600 py-3.5 pl-11 pr-4 rounded-2xl text-sm tracking-widest text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-cyan-500/10"
                 id="login-password"
               />
             </div>
@@ -224,7 +223,7 @@ function LoginPage() {
 
           <div className="flex justify-end -mt-1 pl-1">
             <Link to="/forgot-password">
-              <span className="text-xs text-zinc-500 hover:text-cyan-400 transition-colors cursor-pointer select-none">
+              <span className="text-xs text-zinc-500 hover:text-cyan-700 transition-colors cursor-pointer select-none">
                 Forgot your password?
               </span>
             </Link>
@@ -234,7 +233,7 @@ function LoginPage() {
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 text-center text-xs text-red-400 font-medium"
+              className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-center text-xs text-rose-600 font-medium"
             >
               {loginError}
             </motion.div>
@@ -245,7 +244,7 @@ function LoginPage() {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={!username || !password || loginPending}
-            className="mt-2 text-sm font-semibold py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:opacity-95 shadow-lg shadow-cyan-500/15 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
+            className="mt-2 text-sm font-semibold py-3.5 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-600/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
             id="login-submit"
           >
             {loginPending ? "Signing in..." : "Sign In"}
@@ -254,28 +253,17 @@ function LoginPage() {
           <span className="text-center text-xs text-zinc-500 mt-2 select-none">
             New to StudyCtrl?{" "}
             <Link to="/register">
-              <span className="text-[#8c46ff] hover:text-[#9e63ff] font-medium cursor-pointer">
+              <span className="text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer">
                 Register account
               </span>
             </Link>
           </span>
 
-          {/* Elegant Alignment Alert & Quote banner */}
-          <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-2.5 select-none text-left">
-            <div className="flex flex-col gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-400">
-              <div className="flex items-center gap-1.5">
-                <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
-                <span className="text-[10px] font-black tracking-widest uppercase">CO-WORKING ALIGNMENT TIMES</span>
-              </div>
-              <p className="text-[11px] text-zinc-300 leading-normal pl-5">
-                • Morning: <strong className="text-white">6:20 AM</strong><br />
-                • Evening: <strong className="text-white">6:45 PM</strong><br />
-                • Daily Reset: <strong className="text-amber-300">6:45 AM</strong> (All Tasks Auto-Reset)
-              </p>
-            </div>
-            <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-3 flex gap-2.5 items-start">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed text-zinc-300 italic">
+          {/* Elegant Quote banner */}
+          <div className="mt-4 pt-4 border-t border-zinc-200 flex flex-col gap-2.5 select-none text-left">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 flex gap-3 items-start">
+              <Sparkles className="h-4 w-4 text-cyan-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed text-zinc-600 italic">
                 "Consistency is the key secret for success. Show up daily and build your future."
               </p>
             </div>
@@ -349,36 +337,35 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-gradient-to-tr from-[#080711] via-[#0e0c1b] to-[#040307] text-white font-sans">
-      {/* Vivo style dynamic smooth glass blobs */}
-      <div className="absolute top-[15%] right-[20%] w-[380px] h-[380px] rounded-full bg-[#8c46ff] opacity-10 filter blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[15%] left-[20%] w-[400px] h-[400px] rounded-full bg-cyan-500 opacity-10 filter blur-[120px] pointer-events-none" />
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-zinc-50 text-zinc-900 font-sans">
+      <div className="absolute top-[15%] right-[20%] w-[380px] h-[380px] rounded-full bg-indigo-500/10 filter blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[15%] left-[20%] w-[400px] h-[400px] rounded-full bg-cyan-500/10 filter blur-[120px] pointer-events-none" />
 
       <motion.div 
          initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="w-full max-w-[440px] bg-white/[0.03] backdrop-blur-[24px] border border-white/[0.08] rounded-[32px] p-8 shadow-[0_24px_50px_rgba(0,0,0,0.4)] flex flex-col z-10"
+        className="w-full max-w-[440px] bg-white border border-zinc-200 rounded-[32px] p-8 shadow-xl flex flex-col z-10"
       >
         <div className="flex flex-col items-center justify-center pb-5">
           <motion.div 
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#8c46ff] to-cyan-400 flex items-center justify-center shadow-lg shadow-purple-500/25 mb-4"
+            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 mb-4"
           >
-            <Users className="w-5 h-5 text-black font-bold" />
+            <Users className="w-5 h-5 text-white font-bold" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400 text-center select-none">
-            Join STUDY<span className="text-[#8c46ff]">CTRL</span>
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 text-center select-none">
+            Join STUDY<span className="text-indigo-600">CTRL</span>
           </h1>
           <p className="text-[11px] text-zinc-500 tracking-wider mt-1 select-none font-medium uppercase">
-            // configure new focus account
+            Configure Focus Account
           </p>
         </div>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+            <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
               Username
             </label>
             <input
@@ -387,13 +374,13 @@ function RegisterPage() {
               onChange={(e) => setUsername(filterUsername(e.target.value))}
               maxLength={20}
               placeholder="Username Handle"
-              className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10"
+              className="w-full bg-zinc-50 border border-zinc-200 focus:border-indigo-600 py-2.5 px-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-indigo-500/10"
               id="reg-username"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+            <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
               Password
             </label>
             <input
@@ -401,13 +388,13 @@ function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min 6 characters"
-              className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10 tracking-widest"
+              className="w-full bg-zinc-50 border border-zinc-200 focus:border-indigo-600 py-2.5 px-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-indigo-500/10 tracking-widest"
               id="reg-password"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+            <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
               Confirm Password
             </label>
             <input
@@ -415,7 +402,7 @@ function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter password"
-              className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10 tracking-widest"
+              className="w-full bg-zinc-50 border border-zinc-200 focus:border-indigo-600 py-2.5 px-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-indigo-500/10 tracking-widest"
               id="reg-confirmpassword"
             />
           </div>
@@ -424,7 +411,7 @@ function RegisterPage() {
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 text-center text-xs text-red-400 font-medium"
+              className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-center text-xs text-rose-600 font-medium"
             >
               {regError}
             </motion.div>
@@ -435,7 +422,7 @@ function RegisterPage() {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={!username || !password || !confirmPassword || regPending}
-            className="mt-2 text-sm font-semibold py-3.5 rounded-2xl bg-gradient-to-r from-[#8c46ff] to-[#792cf9] text-white hover:opacity-95 shadow-lg shadow-purple-500/15 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
+            className="mt-2 text-sm font-semibold py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
             id="reg-submit"
           >
             {regPending ? "Creating account..." : "Register"}
@@ -444,28 +431,17 @@ function RegisterPage() {
           <span className="text-center text-xs text-zinc-500 mt-1 select-none">
             Already registered?{" "}
             <Link to="/login">
-              <span className="text-cyan-400 hover:text-cyan-300 font-medium cursor-pointer">
+              <span className="text-cyan-600 hover:text-cyan-700 font-medium cursor-pointer">
                 Sign in here
               </span>
             </Link>
           </span>
 
-          {/* Elegant Alignment Alert & Quote banner */}
-          <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-2.5 select-none text-left">
-            <div className="flex flex-col gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-400">
-              <div className="flex items-center gap-1.5">
-                <Bell className="h-3.5 w-3.5 animate-bounce shrink-0" />
-                <span className="text-[10px] font-black tracking-widest uppercase">CO-WORKING ALIGNMENT TIMES</span>
-              </div>
-              <p className="text-[11px] text-zinc-300 leading-normal pl-5">
-                • Morning: <strong className="text-white">6:20 AM</strong><br />
-                • Evening: <strong className="text-white">6:45 PM</strong><br />
-                • Daily Reset: <strong className="text-amber-300">6:45 AM</strong> (All Tasks Auto-Reset)
-              </p>
-            </div>
-            <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-3 flex gap-2.5 items-start">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed text-zinc-300 italic">
+          {/* Elegant Quote banner */}
+          <div className="mt-4 pt-4 border-t border-zinc-200 flex flex-col gap-2.5 select-none text-left">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 flex gap-3 items-start">
+              <Sparkles className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed text-zinc-600 italic">
                 "Small daily improvements over time lead to stunning results. Stay consistent."
               </p>
             </div>
@@ -565,49 +541,48 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-gradient-to-tr from-[#080711] via-[#0e0c1b] to-[#040307] text-white font-sans">
-      {/* Vivo style dynamic smooth glass blobs */}
-      <div className="absolute top-[15%] left-[20%] w-[380px] h-[380px] rounded-full bg-[#8c46ff] opacity-10 filter blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full bg-cyan-500 opacity-10 filter blur-[120px] pointer-events-none" />
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-zinc-50 text-zinc-900 font-sans">
+      <div className="absolute top-[15%] left-[20%] w-[380px] h-[380px] rounded-full bg-indigo-500/10 filter blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full bg-cyan-500/10 filter blur-[120px] pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="w-full max-w-[420px] bg-white/[0.03] backdrop-blur-[24px] border border-white/[0.08] rounded-[32px] p-8 shadow-[0_24px_50px_rgba(0,0,0,0.4)] flex flex-col z-10"
+        className="w-full max-w-[420px] bg-white border border-zinc-200 rounded-[32px] p-8 shadow-xl flex flex-col z-10"
       >
         <div className="flex flex-col items-center justify-center pb-5">
           <motion.div 
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#8c46ff] to-cyan-400 flex items-center justify-center shadow-lg shadow-purple-500/25 mb-4"
+            className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 mb-4"
           >
-            <Lock className="w-5 h-5 text-black font-bold" />
+            <Lock className="w-5 h-5 text-white font-bold" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400 text-center select-none">
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 text-center select-none">
             Reset Password
           </h1>
           <p className="text-[11px] text-zinc-500 tracking-wider mt-1 select-none font-medium uppercase">
-            // recover studyctrl login
+            Recover StudyCtrl Login
           </p>
         </div>
 
         {debugCode && (
-          <div className="mt-2 mb-4 p-3 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-cyan-400">
+          <div className="mt-2 mb-4 p-3 rounded-2xl bg-cyan-50 border border-cyan-200 text-xs text-cyan-800">
             <span className="font-bold">// SIMULATOR INBOX NOTICE:</span>
             <p className="mt-1">Verification code sent for {username}:</p>
-            <p className="text-sm font-black text-white mt-1.5 bg-black/40 border border-cyan-500/20 px-2 py-1.5 rounded-xl text-center tracking-widest">{debugCode}</p>
+            <p className="text-sm font-black text-zinc-900 mt-1.5 bg-white border border-cyan-200 px-2 py-1.5 rounded-xl text-center tracking-widest">{debugCode}</p>
           </div>
         )}
 
         {successMsg && !debugCode && (
-          <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 text-center font-medium">
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 text-center font-medium">
             {successMsg}
           </div>
         )}
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 text-center font-medium">
+          <div className="mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-600 text-center font-medium">
             {errorMsg}
           </div>
         )}
@@ -615,7 +590,7 @@ function ForgotPasswordPage() {
         {step === 1 ? (
           <form onSubmit={handleRequestCode} className="flex flex-col gap-5">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+              <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
                 Username
               </label>
               <input
@@ -623,7 +598,7 @@ function ForgotPasswordPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Your username"
-                className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10"
+                className="w-full bg-zinc-50 border border-zinc-200 focus:border-indigo-600 py-2.5 px-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-indigo-500/10"
                 id="recover-username"
                 required
               />
@@ -634,14 +609,14 @@ function ForgotPasswordPage() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={!username || pending}
-              className="mt-1 text-sm font-semibold py-3.5 rounded-2xl bg-gradient-to-r from-[#8c46ff] to-[#792cf9] text-white hover:opacity-95 shadow-lg shadow-purple-500/15 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
+              className="mt-1 text-sm font-semibold py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
               id="recover-request-btn"
             >
               {pending ? "Sending Reset Code..." : "Send Reset Code"}
             </motion.button>
 
             <Link to="/login" className="text-center mt-1">
-              <span className="text-xs text-cyan-400 hover:text-cyan-300 font-medium cursor-pointer">
+              <span className="text-xs text-cyan-600 hover:text-cyan-700 font-medium cursor-pointer">
                 Back to sign in
               </span>
             </Link>
@@ -649,19 +624,19 @@ function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleResetPassword} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+              <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
                 Username
               </label>
               <input
                 type="text"
                 value={username}
                 disabled
-                className="w-full bg-[#121016]/80 border border-white/5 py-2.5 px-4 rounded-2xl text-sm text-white/40 cursor-not-allowed"
+                className="w-full bg-zinc-100 border border-zinc-200 py-2.5 px-4 rounded-2xl text-sm text-zinc-500 cursor-not-allowed"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+              <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
                 6-Digit Verification Code
               </label>
               <input
@@ -670,14 +645,14 @@ function ForgotPasswordPage() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="123456"
                 maxLength={6}
-                className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10 tracking-widest text-center font-bold"
+                className="w-full bg-zinc-50 border border-zinc-200 focus:border-indigo-600 py-2.5 px-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-indigo-500/10 tracking-widest text-center font-bold"
                 id="recover-code"
                 required
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] uppercase text-zinc-400 font-bold tracking-wider pl-1 select-none">
+              <label className="text-[10px] uppercase text-zinc-600 font-bold tracking-wider pl-1 select-none">
                 New Password
               </label>
               <input
@@ -685,7 +660,7 @@ function ForgotPasswordPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Min 6 characters"
-                className="w-full bg-black/40 border border-white/10 focus:border-[#8c46ff]/60 py-2.5 px-4 rounded-2xl text-sm tracking-widest placeholder:text-zinc-600 transition-all outline-none focus:ring-4 focus:ring-purple-500/10"
+                className="w-full bg-zinc-50 border border-zinc-200 focus:border-indigo-600 py-2.5 px-4 rounded-2xl text-sm text-zinc-900 placeholder:text-zinc-400 transition-all outline-none focus:ring-4 focus:ring-indigo-500/10 tracking-widest"
                 id="recover-newpassword"
                 required
               />
@@ -696,7 +671,7 @@ function ForgotPasswordPage() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={!code || !newPassword || pending}
-              className="mt-2 text-sm font-semibold py-3.5 rounded-2xl bg-gradient-to-r from-[#8c46ff] to-[#792cf9] text-white hover:opacity-95 shadow-lg shadow-purple-500/15 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
+              className="mt-2 text-sm font-semibold py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center"
               id="recover-submit-btn"
             >
               {pending ? "Confirming..." : "Confirm New Password"}
@@ -710,7 +685,7 @@ function ForgotPasswordPage() {
                 setErrorMsg("");
                 setSuccessMsg("");
               }}
-              className="text-center mt-1 text-xs text-cyan-400 hover:text-cyan-300 font-medium cursor-pointer bg-transparent border-none outline-none"
+              className="text-center mt-1 text-xs text-cyan-600 hover:text-cyan-700 font-medium cursor-pointer bg-transparent border-none outline-none"
             >
               Request new code
             </button>
@@ -746,10 +721,9 @@ function LobbyPage() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden bg-gradient-to-tr from-[#080711] via-[#0e0c1b] to-[#040307] text-white font-sans">
-      {/* Vivo style dynamic smooth glass blobs */}
-      <div className="absolute top-[10%] left-[25%] w-[450px] h-[450px] rounded-full bg-cyan-500 opacity-[0.08] filter blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[25%] w-[450px] h-[450px] rounded-full bg-[#8c46ff] opacity-[0.08] filter blur-[120px] pointer-events-none" />
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 overflow-hidden bg-zinc-50 text-zinc-900 font-sans">
+      <div className="absolute top-[10%] left-[25%] w-[450px] h-[450px] rounded-full bg-cyan-500/10 filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[25%] w-[450px] h-[450px] rounded-full bg-indigo-500/10 filter blur-[120px] pointer-events-none" />
 
       {/* Main Core Title */}
       <div className="flex flex-col items-center text-center mb-8 z-10 select-none">
@@ -757,12 +731,12 @@ function LobbyPage() {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring" }}
-          className="w-14 h-14 rounded-[22px] bg-gradient-to-tr from-cyan-400 to-[#8c46ff] flex items-center justify-center shadow-2xl shadow-cyan-500/20 mb-5"
+          className="w-14 h-14 rounded-[22px] bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-cyan-600/20 mb-5"
         >
-          <Compass className="w-7 h-7 text-black" />
+          <Compass className="w-7 h-7 text-white" />
         </motion.div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
-          STUDY<span className="text-cyan-400">CTRL</span>
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900">
+          STUDY<span className="text-cyan-600">CTRL</span>
         </h1>
         <p className="text-xs font-semibold uppercase text-zinc-500 tracking-widest mt-2">
           DEEP FOCUS • SHARED PRESENCE • INTUITIVE AGILITY
@@ -774,20 +748,20 @@ function LobbyPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="w-full max-w-md flex justify-between items-center bg-white/[0.02] border border-white/[0.06] backdrop-blur-xl py-3 px-5 rounded-2xl mb-4 text-xs select-none z-10 shadow-lg"
+        className="w-full max-w-md flex justify-between items-center bg-white border border-zinc-200 py-3 px-5 rounded-2xl mb-4 text-xs select-none z-10 shadow-sm"
       >
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
           <button 
             onClick={() => setIsStatsOpen(true)}
-            className="text-zinc-300 font-semibold hover:text-cyan-400 transition-colors cursor-pointer text-left focus:outline-none"
+            className="text-zinc-800 font-semibold hover:text-cyan-700 transition-colors cursor-pointer text-left focus:outline-none"
           >
-            {user?.username} <span className="text-zinc-500 font-normal text-[11px] ml-1">(View Session History)</span>
+            {user?.username} <span className="text-zinc-400 font-normal text-[11px] ml-1">(View Session History)</span>
           </button>
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-1.5 text-zinc-400 hover:text-red-400 font-semibold transition-all cursor-pointer text-[11px] uppercase tracking-wider"
+          className="flex items-center gap-1.5 text-zinc-500 hover:text-rose-600 font-semibold transition-all cursor-pointer text-[11px] uppercase tracking-wider"
         >
           <LogOut className="h-3.5 w-3.5" />
           <span>Sign Out</span>
@@ -799,30 +773,30 @@ function LobbyPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="w-full max-w-md bg-white/[0.03] backdrop-blur-[24px] border border-white/[0.08] rounded-[32px] overflow-hidden z-10 p-8 flex flex-col gap-6 shadow-[0_24px_50px_rgba(0,0,0,0.3)]"
+        className="w-full max-w-md bg-white border border-zinc-200 rounded-[32px] overflow-hidden z-10 p-8 flex flex-col gap-6 shadow-xl"
       >
         {/* Core panel header */}
-        <div className="flex flex-col gap-1.5 text-center border-b border-white/[0.06] pb-5">
-          <span className="text-xl font-bold tracking-tight text-white">
+        <div className="flex flex-col gap-1.5 text-center border-b border-zinc-200 pb-5">
+          <span className="text-xl font-bold tracking-tight text-zinc-900">
             Next Toppers Space
           </span>
           <span className="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase">
-            // LIVE COLLABORATIVE CO-WORKING
+            Collaborative Workspace
           </span>
         </div>
 
         <div className="flex flex-col gap-3 py-1 items-center justify-center text-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
             Active Co-Working Zone
           </span>
-          <p className="text-zinc-400 text-sm leading-relaxed max-w-xs mt-2">
+          <p className="text-zinc-600 text-sm leading-relaxed max-w-xs mt-2">
             The study space is open now. Click below to instantly connect with peers, study in sync, and view materials inline.
           </p>
         </div>
 
         {errorStr && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-3.5 text-center text-xs text-red-400 font-medium">
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3.5 text-center text-xs text-rose-600 font-medium">
             {errorStr}
           </div>
         )}
@@ -832,7 +806,7 @@ function LobbyPage() {
           whileTap={{ scale: 0.98 }}
           onClick={handleEnterNextToppers}
           disabled={loading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:opacity-95 shadow-lg shadow-cyan-500/20 text-sm font-semibold tracking-wide transition-all text-center block cursor-pointer"
+          className="w-full py-4 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-600/20 text-sm font-semibold tracking-wide transition-all text-center block cursor-pointer"
         >
           {loading ? "Connecting Space..." : "Enter Study Space"}
         </motion.button>
@@ -871,6 +845,73 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     typeof window !== "undefined" && "Notification" in window ? Notification.permission : "default"
   );
 
+  const [synthActive, setSynthActive] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const synthNodesRef = useRef<any[]>([]);
+
+  const startSynth = () => {
+    try {
+      if (audioContextRef.current) return;
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = ctx;
+      const freqs = [110, 165, 220]; // Harmonious warm A-drone
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.connect(ctx.destination);
+      const nodes = freqs.map(f => {
+        const osc = ctx.createOscillator();
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(f, ctx.currentTime);
+        lfo.type = "sine";
+        lfo.frequency.setValueAtTime(0.2, ctx.currentTime); // slow pulse
+        lfoGain.gain.setValueAtTime(3, ctx.currentTime);
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        osc.connect(gain);
+        lfo.start();
+        osc.start();
+        return { osc, lfo };
+      });
+      synthNodesRef.current = nodes;
+      setSynthActive(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const stopSynth = () => {
+    try {
+      if (synthNodesRef.current) {
+        synthNodesRef.current.forEach(n => {
+          try { n.osc.stop(); n.lfo.stop(); } catch(e){}
+        });
+        synthNodesRef.current = [];
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+      setSynthActive(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (synthNodesRef.current) {
+        synthNodesRef.current.forEach(n => {
+          try { n.osc.stop(); n.lfo.stop(); } catch(e){}
+        });
+      }
+      if (audioContextRef.current) {
+        try { audioContextRef.current.close(); } catch(e){}
+      }
+    };
+  }, []);
+
   const requestNotificationAccess = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
       alert("System notifications are not fully supported on this browser.");
@@ -880,8 +921,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
       const permission = await Notification.requestPermission();
       setNotifPermission(permission);
       if (permission === "granted") {
-        new Notification("🏆 Toppers Study Co-working Active!", {
-          body: "Sync co-working reminders are active daily at 06:20 AM and 06:45 PM. Consistent work yields stunning results!",
+        new Notification("🏆 Study Space Focus Alerts Enabled!", {
+          body: "Stay consistent! You will receive live status reports and workspace focus sync notifications.",
           icon: "/favicon.ico"
         });
       }
@@ -1013,6 +1054,59 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const [pomoPhase, setPomoPhase] = useState<"Work" | "Break">("Work");
   const [pomoRunning, setPomoRunning] = useState(false);
   const [pomoSecondsLeft, setPomoSecondsLeft] = useState(25 * 60);
+
+  // Focus Streak State & Handlers
+  const [focusStreak, setFocusStreak] = useState(0);
+  const [todayPomoCount, setTodayPomoCount] = useState(0);
+  const [pomoCompletions, setPomoCompletions] = useState<Record<string, number>>({});
+
+  const fetchStreak = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch("/api/stats/streak", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFocusStreak(data.streak || 0);
+        setTodayPomoCount(data.todayCount || 0);
+        setPomoCompletions(data.pomoCompletions || {});
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRecordPomodoro = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch("/api/stats/pomodoro_complete", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFocusStreak(data.streak || 0);
+        setTodayPomoCount(data.todayCount || 0);
+        setPomoCompletions(data.pomoCompletions || {});
+
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("🔥 Focus Streak Updated!", {
+            body: `Pomodoro session completed! Current streak: ${data.streak} day${data.streak !== 1 ? 's' : ''}!`,
+          });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchStreak();
+  }, [token]);
 
   // Connect & Reconnect protocol
   const connect = () => {
@@ -1370,6 +1464,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
       if (pomoPhase === "Work") {
         setPomoPhase("Break");
         setPomoSecondsLeft(pomBreak * 60);
+        handleRecordPomodoro();
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           const me = participants.find((p) => p.id === selfId);
           if (me && me.isActive) {
@@ -1655,8 +1750,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const activeFocusCount = participants.filter((p) => p.isActive && !p.isOffline).length;
 
   return (
-    <div className="min-h-screen bg-[#07060c] text-zinc-100 flex flex-col relative overflow-hidden font-sans select-none">
-      {/* Vivo style dynamic organic blurred glass blobs */}
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col relative overflow-hidden font-sans select-none">
       <div className="absolute top-[5%] left-[10%] w-[450px] h-[450px] rounded-full bg-cyan-500/10 filter blur-[100px] pointer-events-none animate-pulse duration-5000" />
       <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 filter blur-[120px] pointer-events-none animate-pulse duration-7000" />
 
@@ -1668,16 +1762,16 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed top-16 right-6 z-50 max-w-sm bg-amber-500/10 backdrop-blur-xl border border-amber-500/20 p-4 rounded-2xl flex gap-3 shadow-[0_12px_32px_rgba(245,158,11,0.15)] items-start"
+            className="fixed top-16 right-6 z-50 max-w-sm bg-amber-50 border border-amber-200 p-4 rounded-2xl flex gap-3 shadow-lg items-start"
             id="network-health-toast"
           >
-            <div className="w-8 h-8 shrink-0 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 shrink-0 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">
               <ShieldAlert className="h-4.5 w-4.5 animate-pulse" />
             </div>
             <div className="flex-1 min-w-0 flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">Unstable Latency Detected</span>
-              <p className="text-[11px] text-zinc-300 mt-1 leading-relaxed">
-                Your connection to the sync server is slow (<span className="font-mono font-bold text-amber-300">{latency}ms</span>). Chat or timer synchronization might experience slight lag.
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-800">Unstable Latency Detected</span>
+              <p className="text-[11px] text-zinc-600 mt-1 leading-relaxed">
+                Your connection to the sync server is slow (<span className="font-mono font-bold text-amber-800">{latency}ms</span>). Chat or timer synchronization might experience slight lag.
               </p>
             </div>
           </motion.div>
@@ -1685,24 +1779,24 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
       </AnimatePresence>
 
       {/* HEADER SECTION */}
-      <header className="h-[56px] fixed top-0 w-full bg-zinc-950/30 backdrop-blur-3xl border-b border-white/[0.06] flex items-center justify-between px-6 z-40">
+      <header className="h-[56px] fixed top-0 w-full bg-white/80 backdrop-blur-3xl border-b border-zinc-200 flex items-center justify-between px-6 z-40">
         <div className="flex items-center gap-4">
           <Link to="/">
             <div className="flex items-center gap-2 cursor-pointer group">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center shadow-md">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shadow-md">
                 <Compass className="h-4 w-4 text-white" />
               </div>
-              <span className="font-extrabold text-sm tracking-wider bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">
+              <span className="font-extrabold text-sm tracking-wider text-zinc-900">
                 StudyCtrl
               </span>
             </div>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="bg-white/[0.04] border border-white/[0.08] text-zinc-300 font-mono text-xs px-3 py-1 rounded-full shadow-sm">
+            <span className="bg-zinc-100 border border-zinc-200 text-zinc-800 font-mono text-xs px-3 py-1 rounded-full shadow-sm font-bold">
               {code}
             </span>
             {isHost && (
-              <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 HOST
               </span>
             )}
@@ -1712,17 +1806,17 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
         {/* Right side controls */}
         <div className="flex items-center gap-4 text-xs font-medium">
           {/* Connection status */}
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.02] border border-white/[0.06] ${
-            isConnected ? "text-emerald-400" : "text-rose-400 animate-pulse"
+          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 ${
+            isConnected ? "text-emerald-700" : "text-rose-600 animate-pulse"
           }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? "bg-emerald-400 shadow-[0_0_8px_#10b981]" : "bg-rose-400 shadow-[0_0_8px_#f43f5e] animate-ping"}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? "bg-emerald-500" : "bg-rose-500 animate-ping"}`} />
             <span className="text-[10px] uppercase tracking-wider font-semibold">{isConnected ? "Live Channel" : "Connecting..."}</span>
           </div>
 
           {/* Mobile App Simulator Toggle */}
           <button
             onClick={() => setIsMobileSimulatorOpen(true)}
-            className="bg-cyan-500/10 hover:bg-cyan-500/20 active:scale-95 border border-cyan-500/20 text-cyan-400 text-[11px] font-extrabold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+            className="bg-cyan-50 hover:bg-cyan-100 active:scale-95 border border-cyan-200 text-cyan-700 text-[11px] font-extrabold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
             title="Open simulated mobile app"
           >
             <Smartphone className="h-3.5 w-3.5" />
@@ -1743,7 +1837,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 }
               });
             }}
-            className="bg-white/[0.05] hover:bg-white/[0.09] active:scale-95 border border-white/[0.08] text-zinc-200 text-[11px] font-bold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            className="bg-zinc-100 hover:bg-zinc-200 active:scale-95 border border-zinc-200 text-zinc-800 text-[11px] font-bold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
           >
             <Copy className="h-3.5 w-3.5" />
             <span id="room-copy-badge">SHARE</span>
@@ -1752,7 +1846,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           {/* Log out of session */}
           <button 
             onClick={logout}
-            className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-300 text-[11px] font-bold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer"
+            className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-bold py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span>SIGN OUT</span>
@@ -1766,34 +1860,32 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
         {/* LEFT COMPARTMENT - COLUMN 8 (Bento Space Workspace) */}
         <div className="lg:col-span-8 flex flex-col gap-6 h-full overflow-y-auto pr-1 scrollbar-none">
           
-          {/* STUDY ALIGNMENT NOTICE & MOTIVATIONAL CAROUSEL */}
+          {/* WORKSPACE PULSE & MOTIVATIONAL CAROUSEL */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
-            {/* Notification Widget */}
-            <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/15 rounded-2xl p-4 flex gap-3.5 items-center shadow-lg backdrop-blur-md relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full filter blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
-                <Bell className="h-5 w-5 animate-bounce" />
+            {/* Live Workspace Pulse Widget */}
+            <div className="bg-white border border-zinc-200 rounded-2xl p-4 flex gap-3.5 items-center shadow-sm relative overflow-hidden group">
+              <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-700 shrink-0 shadow-inner">
+                <Users className="h-5 w-5 animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-widest font-extrabold text-amber-400">STUDY ALIGNMENT TIMES</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                  <span className="text-[10px] uppercase tracking-widest font-extrabold text-cyan-700">WORKSPACE PULSE</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                 </div>
-                <h4 className="text-xs font-bold text-white mt-0.5">Morning 6:20 AM • Evening 6:45 PM</h4>
-                <p className="text-zinc-400 text-[11px] leading-relaxed mt-0.5">
-                  Sessions begin promptly at <strong className="text-zinc-200">06:20</strong> and <strong className="text-zinc-200">18:45</strong>. Daily tasks auto-reset at <strong className="text-amber-400 font-semibold">6:45 AM</strong>.
+                <h4 className="text-xs font-bold text-zinc-900 mt-0.5">{participants.length} Engaged Members</h4>
+                <p className="text-zinc-600 text-[11px] leading-relaxed mt-0.5">
+                  Focusing live alongside <strong className="text-cyan-700">{activeFocusCount} squad mate{activeFocusCount !== 1 ? 's' : ''}</strong>. PDFs in library: <strong className="text-zinc-800">{materials.length}</strong>.
                 </p>
               </div>
             </div>
 
             {/* Premium Quote Carousel */}
-            <div className="bg-gradient-to-r from-cyan-500/10 via-cyan-500/5 to-transparent border border-cyan-500/15 rounded-2xl p-4 flex gap-3.5 items-center shadow-lg backdrop-blur-md relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full filter blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 shadow-inner">
-                <Sparkles className="h-5 w-5 text-cyan-300 animate-pulse" />
+            <div className="bg-white border border-zinc-200 rounded-2xl p-4 flex gap-3.5 items-center shadow-sm relative overflow-hidden group">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 shrink-0 shadow-inner">
+                <Sparkles className="h-5 w-5 text-indigo-600 animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[10px] uppercase tracking-widest font-extrabold text-cyan-400">DAILY CO-WORKING MOTIVATION</span>
+                <span className="text-[10px] uppercase tracking-widest font-extrabold text-indigo-700">DAILY FOCUS MOTIVATION</span>
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={currentQuoteIndex}
@@ -1801,7 +1893,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="text-[11px] italic text-zinc-200 mt-1 leading-relaxed line-clamp-2"
+                    className="text-[11px] italic text-zinc-700 mt-1 leading-relaxed line-clamp-2 font-medium"
                   >
                     "{STUDY_QUOTES[currentQuoteIndex]}"
                   </motion.p>
@@ -1815,22 +1907,22 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg shrink-0 select-none relative overflow-hidden"
+              className="bg-white border border-zinc-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm shrink-0 select-none relative overflow-hidden"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-700 shrink-0">
                   <Bell className="h-4.5 w-4.5 animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Enable High-Priority Co-Working Alerts</h4>
-                  <p className="text-zinc-400 text-[11px] mt-0.5 leading-relaxed">
-                    Don't miss the morning study session at <strong className="text-indigo-300">6:20 AM</strong>. Enable standard browser notifications.
+                  <h4 className="text-xs font-bold text-zinc-900">Enable High-Priority Focus Alerts</h4>
+                  <p className="text-zinc-600 text-[11px] mt-0.5 leading-relaxed">
+                    Receive instant desktop alerts when a squad member completes a study milestone.
                   </p>
                 </div>
               </div>
               <button
                 onClick={requestNotificationAccess}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 active:scale-95 text-white font-extrabold text-[11px] uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold text-[11px] uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
               >
                 Allow Notifications
               </button>
@@ -1838,10 +1930,10 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           )}
 
           {/* TOP BENTO: POMODORO & STUDY TIMERS */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-white/[0.01] border border-white/[0.04] rounded-[28px] p-6 backdrop-blur-xl shadow-md">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-white border border-zinc-200 rounded-[28px] p-6 shadow-sm">
             
             {/* Visual Circular Gauge Section (Left Col) */}
-            <div className="md:col-span-5 flex flex-col items-center justify-center p-4 border-r border-white/[0.06]">
+            <div className="md:col-span-5 flex flex-col items-center justify-center p-4 border-r border-zinc-200">
               {/* Force re-render of this section on every ticker step by injecting ticker key */}
               <div key={`timer-gauge-${ticker}`} className="relative w-44 h-44 flex items-center justify-center select-none">
                 {/* SVG circular concentric rings */}
@@ -1851,7 +1943,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     cx="88"
                     cy="88"
                     r="76"
-                    className="stroke-white/[0.03]"
+                    className="stroke-zinc-200"
                     strokeWidth="8"
                     fill="transparent"
                   />
@@ -1860,7 +1952,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     cx="88"
                     cy="88"
                     r="76"
-                    className="stroke-cyan-400 transition-all duration-1000"
+                    className="stroke-cyan-600 transition-all duration-1000"
                     strokeWidth="8"
                     fill="transparent"
                     strokeDasharray={477.5}
@@ -1880,21 +1972,18 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                       return 477.5; // empty when idle
                     })()}
                     strokeLinecap="round"
-                    style={{
-                      filter: "drop-shadow(0 0 6px rgba(34, 211, 238, 0.45))"
-                    }}
                   />
                 </svg>
 
                 {/* Clock value overlay inside circle */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-cyan-400/80 mb-1">
+                  <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-cyan-700 mb-1">
                     {pomoRunning ? `${pomoPhase}` : mePart?.isActive ? "FOCUSING" : "IDLE"}
                   </span>
-                  <span className="font-mono text-3xl font-extrabold text-white tracking-tight tabular-nums">
+                  <span className="font-mono text-3xl font-extrabold text-zinc-900 tracking-tight tabular-nums">
                     {pomoRunning ? formatSecondsToClock(pomoSecondsLeft) : formatSecondsToClock(myLiveSeconds)}
                   </span>
-                  <span className="text-[9px] text-zinc-400/80 mt-1 font-medium">
+                  <span className="text-[9px] text-zinc-500 mt-1 font-semibold">
                     TODAY: {formatSecondsToClock(mePart ? getLiveDailyFocusTime(mePart) : 0)}
                   </span>
                 </div>
@@ -1904,8 +1993,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             {/* Timers & Interactive Settings (Right Col) */}
             <div className="md:col-span-7 flex flex-col justify-between gap-4 p-2">
               <div className="flex flex-col gap-1.5">
-                <h3 className="font-extrabold text-lg text-white">Focus Space</h3>
-                <p className="text-zinc-400 text-xs leading-relaxed">
+                <h3 className="font-extrabold text-lg text-zinc-900">Focus Space</h3>
+                <p className="text-zinc-600 text-xs leading-relaxed">
                   Toggle your live study status to track attention duration. Use the Pomodoro control below to structure interval cycles.
                 </p>
               </div>
@@ -1917,8 +2006,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                   onClick={toggleFocusStatus}
                   className={`flex-1 min-w-[150px] py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
                     mePart?.isActive
-                      ? "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/10"
-                      : "bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-extrabold shadow-cyan-400/10"
+                      ? "bg-rose-600 hover:bg-rose-700 text-white"
+                      : "bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold"
                   }`}
                 >
                   {mePart?.isActive ? (
@@ -1937,18 +2026,48 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 {/* Stats dialog trigger */}
                 <button
                   onClick={() => setViewStatsId(true)}
-                  className="px-4 py-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-zinc-200 text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-3 rounded-2xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 text-xs font-bold transition-all cursor-pointer"
                 >
                   Stats
                 </button>
               </div>
 
+              {/* Cosmic Audio Drone Generator */}
+              <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3 flex items-center justify-between gap-4 mt-1 select-none">
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
+                    synthActive 
+                      ? "border-cyan-300 bg-cyan-100 text-cyan-800" 
+                      : "border-zinc-200 bg-white text-zinc-500"
+                  }`}>
+                    <Volume2 className={`h-4 w-4 ${synthActive ? "animate-pulse" : ""}`} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Binaural Star Drone</span>
+                    <span className="text-[11px] text-zinc-800 font-medium">
+                      {synthActive ? "Deep cosmic drone streaming live" : "Synthetic focus frequency hum"}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={synthActive ? stopSynth : startSynth}
+                  className={`py-1.5 px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border cursor-pointer ${
+                    synthActive
+                      ? "bg-cyan-100 border-cyan-300 text-cyan-800"
+                      : "bg-white border-zinc-200 text-zinc-700 hover:text-zinc-900"
+                  }`}
+                >
+                  {synthActive ? "Stop Drone" : "Synthesize"}
+                </button>
+              </div>
+
               {/* Pomodoro controls line */}
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-3.5 flex items-center justify-between gap-4 mt-1">
+              <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 flex items-center justify-between gap-4 mt-1">
                 <div className="flex flex-col">
                   <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Pomodoro Timer</span>
-                  <span className="text-xs text-zinc-300 font-medium mt-0.5">
-                    Interval: <span className="font-semibold text-indigo-400">{pomWork}m</span> • Break: <span className="font-semibold text-emerald-400">{pomBreak}m</span>
+                  <span className="text-xs text-zinc-800 font-medium mt-0.5">
+                    Interval: <span className="font-bold text-indigo-700">{pomWork}m</span> • Break: <span className="font-bold text-emerald-700">{pomBreak}m</span>
                   </span>
                 </div>
 
@@ -1957,8 +2076,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     onClick={handleTogglePomo}
                     className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-sm ${
                       pomoRunning 
-                        ? "border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20" 
-                        : "border-indigo-500/40 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20"
+                        ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100" 
+                        : "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
                     }`}
                   >
                     {pomoRunning ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
@@ -1969,7 +2088,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                       setPomoPhase("Work");
                       setPomoSecondsLeft(pomWork * 60);
                     }}
-                    className="w-9 h-9 rounded-xl border border-white/[0.06] bg-white/[0.02] text-zinc-400 hover:text-white hover:bg-white/[0.06] flex items-center justify-center transition-all cursor-pointer"
+                    className="w-9 h-9 rounded-xl border border-zinc-200 bg-white text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center transition-all cursor-pointer"
                     title="Reset Pomodoro"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -2196,16 +2315,115 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           </div>
 
         {/* RIGHT SIDEBAR PANEL - COLUMN 4 */}
-        <div className="lg:col-span-4 flex flex-col border border-white/[0.06] bg-zinc-950/40 backdrop-blur-3xl rounded-[28px] h-[calc(100vh-7.5rem)] overflow-hidden shadow-2xl">
+        <div className="lg:col-span-4 flex flex-col border border-zinc-200 bg-white rounded-[28px] h-[calc(100vh-7.5rem)] overflow-hidden shadow-lg">
           
+          {/* VISUAL FOCUS STREAK COUNTER BANNER */}
+          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border-b border-zinc-200 p-3.5 px-4 flex flex-col gap-2.5 shrink-0 select-none">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-orange-500/20 shrink-0 relative group">
+                  <Flame className="h-5 w-5 fill-current animate-pulse" />
+                  {focusStreak > 0 && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white animate-ping" />
+                  )}
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-800">FOCUS STREAK</span>
+                    <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                      focusStreak > 0
+                        ? "bg-amber-100 text-amber-800 border-amber-300"
+                        : "bg-zinc-100 text-zinc-600 border-zinc-200"
+                    }`}>
+                      {focusStreak > 0 ? "ON FIRE" : "IDLE"}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                    <span className="text-lg font-black text-zinc-900 tracking-tight">
+                      {focusStreak} {focusStreak === 1 ? "Day" : "Days"}
+                    </span>
+                    <span className="text-[10px] text-zinc-500 font-semibold">consecutive</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Finish / Log Pomodoro session button */}
+              <button
+                onClick={handleRecordPomodoro}
+                className="py-1.5 px-3 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                title="Log a completed Pomodoro session to update streak"
+              >
+                <Flame className="h-3 w-3 fill-current" />
+                <span>+1 Session</span>
+              </button>
+            </div>
+
+            {/* Subtext and Today's session status */}
+            <div className="flex items-center justify-between bg-white/80 border border-amber-200/60 rounded-xl px-2.5 py-1.5 text-[10px]">
+              <span className="text-zinc-600 font-medium flex items-center gap-1">
+                <CheckCircle2 className={`h-3.5 w-3.5 ${todayPomoCount > 0 ? "text-emerald-600" : "text-zinc-400"}`} />
+                <span>{todayPomoCount > 0 ? `${todayPomoCount} Pomodoro${todayPomoCount > 1 ? 's' : ''} completed today` : 'No Pomodoros completed today'}</span>
+              </span>
+              <span className="font-mono font-bold text-orange-700">
+                {todayPomoCount > 0 ? "Streak Extended!" : "1 needed for today"}
+              </span>
+            </div>
+
+            {/* Past 7 Days Mini Streak Tracker (M, T, W, T, F, S, S) */}
+            <div className="flex items-center justify-between pt-0.5 px-0.5">
+              {(() => {
+                const days = [];
+                const now = new Date();
+                const formatDate = (d: Date) => {
+                  const y = d.getFullYear();
+                  const m = String(d.getMonth() + 1).padStart(2, '0');
+                  const day = String(d.getDate()).padStart(2, '0');
+                  return `${y}-${m}-${day}`;
+                };
+
+                for (let i = 6; i >= 0; i--) {
+                  const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                  const dateStr = formatDate(d);
+                  const dayLabel = d.toLocaleDateString("en-US", { weekday: "narrow" });
+                  const isToday = i === 0;
+                  const count = pomoCompletions[dateStr] || 0;
+                  const completed = count > 0;
+
+                  days.push(
+                    <div key={dateStr} className="flex flex-col items-center gap-1">
+                      <div className={`w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center transition-all ${
+                        completed
+                          ? "bg-orange-500 text-white shadow-xs"
+                          : isToday
+                          ? "border-2 border-dashed border-orange-400 text-orange-600 bg-orange-50 animate-pulse"
+                          : "bg-zinc-100 text-zinc-400 border border-zinc-200"
+                      }`}>
+                        {completed ? (
+                          <Flame className="h-3.5 w-3.5 fill-current" />
+                        ) : (
+                          <span>{dayLabel}</span>
+                        )}
+                      </div>
+                      <span className={`text-[8px] font-bold ${isToday ? "text-orange-700" : "text-zinc-400"}`}>
+                        {isToday ? "TODAY" : dayLabel}
+                      </span>
+                    </div>
+                  );
+                }
+                return days;
+              })()}
+            </div>
+          </div>
+
           {/* TAB STRIP */}
-          <div className="grid grid-cols-5 bg-zinc-950/40 p-1.5 gap-1 border-b border-white/[0.04]">
+          <div className="grid grid-cols-5 bg-zinc-100 p-1.5 gap-1 border-b border-zinc-200">
             <button
               onClick={() => handleTabSelection("presence")}
               className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === "presence" 
-                  ? "bg-white/[0.06] text-cyan-400 font-bold shadow-sm" 
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-cyan-700 font-bold shadow-sm" 
+                  : "text-zinc-500 hover:text-zinc-800"
               }`}
             >
               <Users className="h-4 w-4 mb-1" />
@@ -2215,8 +2433,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
               onClick={() => handleTabSelection("leaderboard")}
               className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === "leaderboard" 
-                  ? "bg-white/[0.06] text-cyan-400 font-bold shadow-sm" 
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-cyan-700 font-bold shadow-sm" 
+                  : "text-zinc-500 hover:text-zinc-800"
               }`}
             >
               <Trophy className="h-4 w-4 mb-1" />
@@ -2226,14 +2444,14 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
               onClick={() => handleTabSelection("chat")}
               className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider relative transition-all cursor-pointer ${
                 activeTab === "chat" 
-                  ? "bg-white/[0.06] text-cyan-400 font-bold shadow-sm" 
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-cyan-700 font-bold shadow-sm" 
+                  : "text-zinc-500 hover:text-zinc-800"
               }`}
             >
               <MessageSquare className="h-4 w-4 mb-1" />
               <span>Chat</span>
               {unreadMsg > 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-cyan-400 text-black text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
+                <span className="absolute top-1.5 right-1.5 bg-cyan-600 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
                   {unreadMsg}
                 </span>
               )}
@@ -2242,8 +2460,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
               onClick={() => handleTabSelection("materials")}
               className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
                 activeTab === "materials" 
-                  ? "bg-white/[0.06] text-cyan-400 font-bold shadow-sm" 
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-cyan-700 font-bold shadow-sm" 
+                  : "text-zinc-500 hover:text-zinc-800"
               }`}
             >
               <BookOpen className="h-4 w-4 mb-1" />
@@ -2253,14 +2471,14 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
               onClick={() => handleTabSelection("tasks")}
               className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-[10px] font-extrabold uppercase tracking-wider relative transition-all cursor-pointer ${
                 activeTab === "tasks" 
-                  ? "bg-white/[0.06] text-cyan-400 font-bold shadow-sm" 
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-cyan-700 font-bold shadow-sm" 
+                  : "text-zinc-500 hover:text-zinc-800"
               }`}
             >
               <CheckSquare className="h-4 w-4 mb-1" />
               <span>Tasks</span>
               {tasks.filter(t => !t.completedBy?.includes(selfId)).length > 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-cyan-400 text-black text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
+                <span className="absolute top-1.5 right-1.5 bg-cyan-600 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
                   {tasks.filter(t => !t.completedBy?.includes(selfId)).length}
                 </span>
               )}
@@ -2275,14 +2493,14 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
               <div className="flex flex-col gap-3 flex-grow min-h-0">
                 <button
                   onClick={() => setShowAllNamesModal(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-cyan-400/5 hover:bg-cyan-400/10 border border-cyan-400/20 hover:border-cyan-400/40 text-cyan-400 text-xs font-bold rounded-2xl transition-all cursor-pointer shadow-sm"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-700 text-xs font-bold rounded-2xl transition-all cursor-pointer shadow-sm"
                 >
                   <Users className="h-4 w-4" />
                   <span>View All Users Name</span>
                 </button>
 
                 {isHost && (
-                  <div className="bg-rose-500/5 border border-rose-500/10 rounded-2xl p-3 flex items-center gap-2 mb-1 select-none text-[10px] text-rose-400 uppercase font-semibold">
+                  <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 flex items-center gap-2 mb-1 select-none text-[10px] text-rose-700 uppercase font-semibold">
                     <ShieldAlert className="h-4 w-4 shrink-0" />
                     <span>Click eject button to remove a participant</span>
                   </div>
@@ -2290,7 +2508,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
                 <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500 mb-1 select-none px-1">
                   <span className="uppercase tracking-wider">ENGAGED ({participants.length})</span>
-                  <span className="uppercase tracking-wider text-cyan-400">{activeFocusCount} FOCUSING</span>
+                  <span className="uppercase tracking-wider text-cyan-700">{activeFocusCount} FOCUSING</span>
                 </div>
 
                 <div className="flex flex-col gap-2 flex-1 pb-16 overflow-y-auto">
@@ -2309,54 +2527,54 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                       <div 
                         key={part.id}
                         onClick={() => setDetailedParticipant(part)}
-                        className={`flex items-center gap-3 group w-full text-left bg-white/[0.01] hover:bg-white/[0.03] rounded-2xl border p-3 cursor-pointer transition-all ${
+                        className={`flex items-center gap-3 group w-full text-left bg-zinc-50 hover:bg-zinc-100 rounded-2xl border p-3 cursor-pointer transition-all ${
                           isMe
-                            ? "border-cyan-400/20 bg-cyan-400/[0.02]"
+                            ? "border-cyan-300 bg-cyan-50/50"
                             : part.isActive && !isOffline
-                            ? "border-emerald-500/20 bg-emerald-500/[0.01]"
-                            : "border-white/[0.04]"
+                            ? "border-emerald-300 bg-emerald-50/30"
+                            : "border-zinc-200"
                         }`}
                       >
                         <div className={`w-9 h-9 rounded-full border flex items-center justify-center text-xs font-extrabold uppercase relative ${
                           isMe
-                            ? "border-cyan-500 text-cyan-400 bg-cyan-950/20"
+                            ? "border-cyan-600 text-cyan-800 bg-cyan-100"
                             : part.isActive && !isOffline
-                            ? "border-emerald-500 text-emerald-400 bg-emerald-950/20"
-                            : "border-white/10 text-zinc-400"
+                            ? "border-emerald-600 text-emerald-800 bg-emerald-100"
+                            : "border-zinc-300 text-zinc-600 bg-zinc-100"
                         }`}>
                           {init.toUpperCase()}
                           {!isOffline && (
-                            <span className={`absolute bottom-[-1px] right-[-1px] w-3 h-3 rounded-full border border-zinc-950 ${
-                              part.isActive ? "bg-emerald-400 animate-pulse" : "bg-cyan-400"
+                            <span className={`absolute bottom-[-1px] right-[-1px] w-3 h-3 rounded-full border border-white ${
+                              part.isActive ? "bg-emerald-500 animate-pulse" : "bg-cyan-500"
                             }`} />
                           )}
                           {isOffline && (
-                            <span className="absolute bottom-[-1px] right-[-1px] w-3 h-3 bg-zinc-600 rounded-full border border-zinc-950" />
+                            <span className="absolute bottom-[-1px] right-[-1px] w-3 h-3 bg-zinc-400 rounded-full border border-white" />
                           )}
                         </div>
 
                         <div className="flex-1 min-w-0 flex flex-col">
                           <span className={`text-xs font-bold truncate flex items-center gap-1.5 ${
-                            isMe ? "text-cyan-400" : isOffline ? "text-zinc-500" : "text-zinc-200"
+                            isMe ? "text-cyan-800" : isOffline ? "text-zinc-400" : "text-zinc-900"
                           }`}>
                             {part.username}
-                            {isMe && <span className="text-[8px] text-cyan-400/40 font-normal uppercase font-sans">(me)</span>}
-                            {isPartAdmin && <span className="text-amber-400 font-bold text-[9px]">★</span>}
+                            {isMe && <span className="text-[8px] text-cyan-600 font-normal uppercase font-sans">(me)</span>}
+                            {isPartAdmin && <span className="text-amber-500 font-bold text-[9px]">★</span>}
                           </span>
                           <div className="flex items-center gap-1.5 mt-1 select-none">
                             {isOffline ? (
-                              <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider bg-zinc-800/50 px-1.5 py-0.5 rounded-md border border-zinc-700/50">OFFLINE</span>
+                              <span className="text-[8px] font-extrabold text-zinc-500 uppercase tracking-wider bg-zinc-200 px-1.5 py-0.5 rounded-md border border-zinc-300">OFFLINE</span>
                             ) : part.isActive ? (
-                              <span className="text-[8px] font-extrabold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20 animate-pulse">LIVE</span>
+                              <span className="text-[8px] font-extrabold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 animate-pulse">LIVE</span>
                             ) : (
-                              <span className="text-[8px] font-extrabold text-cyan-400 uppercase tracking-wider bg-cyan-500/10 px-1.5 py-0.5 rounded-md border border-cyan-500/20">ONLINE</span>
+                              <span className="text-[8px] font-extrabold text-cyan-700 uppercase tracking-wider bg-cyan-50 px-1.5 py-0.5 rounded-md border border-cyan-200">ONLINE</span>
                             )}
                             {isPartAdmin ? (
-                              <span className="text-[8px] font-extrabold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-md uppercase">ADMIN</span>
+                              <span className="text-[8px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md uppercase">ADMIN</span>
                             ) : isPartCoHost ? (
-                              <span className="text-[8px] font-extrabold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded-md uppercase font-sans">CO-HOST</span>
+                              <span className="text-[8px] font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded-md uppercase font-sans">CO-HOST</span>
                             ) : (
-                              <span className="text-[8px] font-medium text-zinc-400 bg-zinc-800/50 border border-zinc-700/50 px-1.5 py-0.5 rounded-md uppercase">STUDENT</span>
+                              <span className="text-[8px] font-medium text-zinc-600 bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded-md uppercase">STUDENT</span>
                             )}
                           </div>
                         </div>
@@ -2371,7 +2589,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                                   e.stopPropagation();
                                   handleUpdateRole(part.id, e.target.value as any);
                               }}
-                              className="bg-zinc-900 text-[9px] text-cyan-400 border border-cyan-500/20 hover:border-cyan-400 rounded-xl px-2 py-1 focus:outline-none cursor-pointer"
+                              className="bg-white text-[9px] text-cyan-700 border border-cyan-300 hover:border-cyan-500 rounded-xl px-2 py-1 focus:outline-none cursor-pointer font-bold"
                             >
                               <option value="user">STUDENT</option>
                               <option value="co-host">CO-HOST</option>
@@ -2380,7 +2598,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                           )}
 
                           <span className={`text-xs font-mono font-bold tracking-wide tabular-nums ${
-                            part.isActive && !isOffline ? "text-cyan-400" : "text-zinc-500"
+                            part.isActive && !isOffline ? "text-cyan-700" : "text-zinc-500"
                           }`}>
                             {formatSecondsToClock(partLiveSec)}
                           </span>
@@ -2389,7 +2607,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                           {isHost && !isMe && (
                             <button
                               onClick={(e) => handleKickParticipant(part.id, e)}
-                              className="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:text-rose-300 hover:border-rose-400 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 hover:text-rose-700 hover:border-rose-300 transition-colors cursor-pointer"
                               title="EJECT USER"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -2417,9 +2635,9 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                   
                   const isTopMedal = index < 3;
                   const medalColors = [
-                    "text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.25)]", // Gold
-                    "text-zinc-300 drop-shadow-[0_0_8px_rgba(212,212,216,0.2)]", // Silver
-                    "text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.2)]"  // Bronze
+                    "text-amber-600 font-extrabold", // Gold
+                    "text-zinc-600 font-extrabold",  // Silver
+                    "text-orange-600 font-extrabold" // Bronze
                   ];
                   const medalLabel = ["1st", "2nd", "3rd"];
 
@@ -2429,37 +2647,37 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                       onClick={() => setDetailedParticipant(part)}
                       className={`flex flex-col border p-4 rounded-2xl gap-3 cursor-pointer transition-all ${
                         isMe
-                          ? "border-cyan-400/20 bg-cyan-400/[0.02]"
-                          : "border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]"
+                          ? "border-cyan-300 bg-cyan-50/50"
+                          : "border-zinc-200 bg-zinc-50 hover:bg-zinc-100"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <span className={`text-xs font-black w-8 text-center uppercase tracking-wider ${
-                            isTopMedal ? medalColors[index] : "text-zinc-600"
+                            isTopMedal ? medalColors[index] : "text-zinc-500"
                           }`}>
                             {isTopMedal ? medalLabel[index] : `#${index + 1}`}
                           </span>
                           <span className={`text-xs font-bold truncate ${
-                            isMe ? "text-cyan-400" : part.isOffline ? "text-zinc-500" : "text-zinc-200"
+                            isMe ? "text-cyan-800" : part.isOffline ? "text-zinc-400" : "text-zinc-900"
                           }`}>
                             {part.username} {isMe && "(you)"}
                           </span>
                         </div>
-                        <span className={`text-xs font-mono font-bold tabular-nums ${isTopMedal ? medalColors[index] : isMe ? "text-cyan-400" : "text-zinc-400"}`}>
+                        <span className={`text-xs font-mono font-bold tabular-nums ${isTopMedal ? medalColors[index] : isMe ? "text-cyan-800" : "text-zinc-600"}`}>
                           {formatSecondsToClock(liveSec)}
                         </span>
                       </div>
 
-                      {/* Glowing custom progress fill bars */}
-                      <div className="w-full h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                      {/* Custom progress fill bars */}
+                      <div className="w-full h-2 bg-zinc-200 rounded-full overflow-hidden">
                         <div 
                           className={`h-full rounded-full transition-all duration-1000 ${
                             index === 0
-                              ? "bg-gradient-to-r from-amber-500 to-yellow-400"
+                              ? "bg-amber-500"
                               : isMe
-                              ? "bg-gradient-to-r from-cyan-500 to-cyan-400"
-                              : "bg-gradient-to-r from-indigo-500 to-purple-500"
+                              ? "bg-cyan-600"
+                              : "bg-indigo-500"
                           }`}
                           style={{ width: `${pct}%` }}
                         />
@@ -2481,8 +2699,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 >
                   {messages.length === 0 ? (
                     <div className="py-20 flex flex-col items-center justify-center text-center select-none text-zinc-500 gap-2.5">
-                      <MessageSquare className="h-8 w-8 text-zinc-600 opacity-60 stroke-[1.5]" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Silence in the Room</span>
+                      <MessageSquare className="h-8 w-8 text-zinc-400 opacity-60 stroke-[1.5]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-600">Silence in the Room</span>
                       <p className="text-[10px] text-zinc-500 max-w-[180px] leading-relaxed">
                         No messages transmitted yet. Type a packet below to broadcast!
                       </p>
@@ -2505,7 +2723,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                           } animate-in fade-in slide-in-from-bottom-2 duration-150`}
                         >
                           <div className="flex items-center gap-1.5 mb-1 text-[10px] font-bold text-zinc-500">
-                            <span className={isOwn ? "text-cyan-400" : "text-purple-400"}>
+                            <span className={isOwn ? "text-cyan-700 font-extrabold" : "text-indigo-700 font-extrabold"}>
                               {msg.username}
                             </span>
                             <span className="text-[8px] opacity-60 select-none font-sans font-medium">{timeStr}</span>
@@ -2513,14 +2731,14 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
                           <div className={`p-3 rounded-2xl border text-xs leading-relaxed break-words ${
                             isOwn 
-                              ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-100 rounded-tr-sm" 
-                              : "bg-white/[0.04] border-white/[0.08] text-zinc-100 rounded-tl-sm"
+                              ? "bg-cyan-600 text-white border-cyan-700 rounded-tr-sm" 
+                              : "bg-zinc-100 border-zinc-200 text-zinc-900 rounded-tl-sm"
                           }`}>
                             {isImg ? (
                               <img
                                 src={msg.text}
                                 alt="Chat Core File"
-                                className="max-w-full max-h-48 rounded-xl bg-black/40 object-contain cursor-zoom-in"
+                                className="max-w-full max-h-48 rounded-xl bg-zinc-200 object-contain cursor-zoom-in"
                                 onClick={() => setViewImageUrl(msg.text)}
                                 referrerPolicy="no-referrer"
                               />
@@ -2535,10 +2753,10 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 </div>
 
                 {/* Sender Entry inputs */}
-                <div className="border-t border-white/[0.06] pt-3 flex items-center gap-2">
+                <div className="border-t border-zinc-200 pt-3 flex items-center gap-2">
                   <button
                     onClick={() => imgInputRef.current?.click()}
-                    className="w-10 h-10 border border-white/[0.06] hover:border-cyan-400 hover:text-cyan-300 text-zinc-400 bg-white/[0.02] hover:bg-white/[0.04] rounded-xl flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm"
+                    className="w-10 h-10 border border-zinc-200 hover:border-cyan-500 hover:text-cyan-700 text-zinc-500 bg-zinc-50 hover:bg-zinc-100 rounded-xl flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm"
                     title="Upload image"
                   >
                     <Paperclip className="h-4 w-4" />
@@ -2557,14 +2775,14 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     onChange={(e) => setChatDraft(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendDraft()}
                     placeholder="Broadcast a message..."
-                    className="flex-1 py-2 px-4 bg-white/[0.02] border border-white/[0.06] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none text-white text-xs rounded-xl placeholder:text-zinc-600 transition-all shadow-inner"
+                    className="flex-1 py-2 px-4 bg-zinc-50 border border-zinc-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-zinc-900 text-xs rounded-xl placeholder:text-zinc-400 transition-all shadow-inner"
                     id="chat-draft-input"
                   />
 
                   <button
                     onClick={handleSendDraft}
                     disabled={!chatDraft.trim()}
-                    className="w-10 h-10 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 rounded-xl flex items-center justify-center transition-all shrink-0 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                    className="w-10 h-10 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl flex items-center justify-center transition-all shrink-0 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer shadow-md"
                   >
                     <Send className="h-4 w-4" />
                   </button>
@@ -2576,17 +2794,17 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             {activeTab === "materials" && (
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500 mb-3 select-none px-1">
-                  <span className="uppercase tracking-wider font-extrabold text-zinc-400">PDF REPOSITORY ({materials.length})</span>
-                  <span className="uppercase tracking-wider text-cyan-400">{myRole} LEVEL</span>
+                  <span className="uppercase tracking-wider font-extrabold text-zinc-600">PDF REPOSITORY ({materials.length})</span>
+                  <span className="uppercase tracking-wider text-cyan-700">{myRole} LEVEL</span>
                 </div>
 
                 {/* Staff Upload Section */}
                 {isStaff ? (
                   <form 
                     onSubmit={handlePdfUploadSubmit}
-                    className="bg-white/[0.01] border border-white/[0.06] rounded-2xl p-4 flex flex-col gap-3 mb-4 animate-fade-in shadow-inner"
+                    className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex flex-col gap-3 mb-4 animate-fade-in shadow-sm"
                   >
-                    <div className="flex items-center gap-1.5 text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-1.5 text-[10px] text-cyan-700 font-bold uppercase tracking-wider">
                       <Cpu className="h-3.5 w-3.5" />
                       <span>Upload Resource PDF</span>
                     </div>
@@ -2596,21 +2814,21 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                       value={pdfUploadTitle}
                       onChange={(e) => setPdfUploadTitle(e.target.value)}
                       placeholder="Document Title (e.g. Math Notes)"
-                      className="w-full py-2 px-3 bg-white/[0.02] border border-white/[0.06] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none text-white text-xs rounded-xl placeholder:text-zinc-600 transition-all"
+                      className="w-full py-2 px-3 bg-white border border-zinc-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-zinc-900 text-xs rounded-xl placeholder:text-zinc-400 transition-all"
                     />
                     
                     {/* PC/Phone File input selector */}
                     <div className="flex flex-col gap-1">
                       {pdfUploadFileName ? (
-                        <div className="flex items-center justify-between bg-cyan-500/5 border border-cyan-500/10 px-3 py-2 rounded-xl text-zinc-300 text-xs">
-                          <span className="truncate max-w-[150px] uppercase font-bold text-cyan-400">{pdfUploadFileName}</span>
+                        <div className="flex items-center justify-between bg-cyan-50 border border-cyan-200 px-3 py-2 rounded-xl text-zinc-800 text-xs">
+                          <span className="truncate max-w-[150px] uppercase font-bold text-cyan-800">{pdfUploadFileName}</span>
                           <button
                             type="button"
                             onClick={() => {
                               setPdfUploadFileBase64(null);
                               setPdfUploadFileName(null);
                             }}
-                            className="text-rose-400 hover:text-rose-300 uppercase text-[9px] font-black cursor-pointer bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded-lg border border-rose-500/10 transition-all"
+                            className="text-rose-700 hover:text-rose-800 uppercase text-[9px] font-black cursor-pointer bg-rose-100 hover:bg-rose-200 px-2 py-0.5 rounded-lg border border-rose-200 transition-all"
                           >
                             REMOVE
                           </button>
@@ -2622,7 +2840,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                             const input = document.getElementById("pdf-file-selector") as HTMLInputElement;
                             if (input) input.click();
                           }}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 bg-cyan-400/5 hover:bg-cyan-400/10 border border-cyan-400/20 hover:border-cyan-400/30 rounded-xl text-cyan-400 text-xs font-bold uppercase transition-all cursor-pointer text-center"
+                          className="w-full flex items-center justify-center gap-2 py-2.5 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 rounded-xl text-cyan-700 text-xs font-bold uppercase transition-all cursor-pointer text-center"
                         >
                           <Upload className="h-4 w-4" />
                           <span>{isReadingPdf ? "READING FILE..." : "SELECT PDF DOCUMENT"}</span>
@@ -2638,7 +2856,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     </div>
 
                     {pdfUploadError && (
-                      <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-2.5 text-center text-xs text-rose-400 uppercase font-semibold">
+                      <div className="bg-rose-50 border border-rose-200 rounded-xl p-2.5 text-center text-xs text-rose-700 uppercase font-semibold">
                         {pdfUploadError}
                       </div>
                     )}
@@ -2646,20 +2864,20 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                     <button
                       type="submit"
                       disabled={isReadingPdf || !pdfUploadTitle || !pdfUploadFileBase64}
-                      className="w-full py-2.5 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shadow-md"
+                      className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shadow-md"
                     >
                       UPLOAD DOCUMENT
                     </button>
-                    <p className="text-[9px] text-zinc-600 select-none leading-relaxed text-center italic">
+                    <p className="text-[9px] text-zinc-500 select-none leading-relaxed text-center italic font-semibold">
                       ONLY STAFF MEMBERS CAN UPLOAD DOCUMENTS.
                     </p>
                   </form>
                 ) : (
-                  <div className="bg-cyan-400/[0.01] border border-cyan-400/10 rounded-2xl p-4 mb-4 text-center">
-                    <p className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center justify-center gap-2">
+                  <div className="bg-cyan-50 border border-cyan-200 rounded-2xl p-4 mb-4 text-center">
+                    <p className="text-xs font-bold text-cyan-800 uppercase tracking-wider flex items-center justify-center gap-2">
                       <BookOpen className="h-4 w-4" /> Study Documents
                     </p>
-                    <p className="text-[10px] text-zinc-500 leading-relaxed mt-2 select-none uppercase font-semibold">
+                    <p className="text-[10px] text-zinc-600 leading-relaxed mt-2 select-none uppercase font-semibold">
                       STUDY REFERENCE MATERIALS AND WORKSHEETS PROVIDED FOR STUDENTS IN THIS ROOM.
                     </p>
                   </div>
@@ -2669,19 +2887,19 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 <div className="space-y-2.5 mt-1 pr-1">
                   {materials.length === 0 ? (
                     <div className="py-20 flex flex-col items-center justify-center text-center select-none text-zinc-500 gap-2">
-                      <FileText className="h-8 w-8 text-zinc-600 opacity-60 stroke-[1.5]" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">No Documents Uploaded</span>
+                      <FileText className="h-8 w-8 text-zinc-400 opacity-60 stroke-[1.5]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-600">No Documents Uploaded</span>
                     </div>
                   ) : (
                     materials.map((mat) => {
                       return (
                         <div 
                           key={mat.id}
-                          className="flex flex-col gap-2.5 p-4 bg-white/[0.01] rounded-2xl border border-white/[0.04] hover:border-cyan-400/20 transition-all group"
+                          className="flex flex-col gap-2.5 p-4 bg-zinc-50 rounded-2xl border border-zinc-200 hover:border-cyan-300 transition-all group shadow-sm"
                         >
                           <div className="flex justify-between items-start gap-2">
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-bold text-zinc-200 truncate uppercase tracking-wide">
+                              <h4 className="text-xs font-bold text-zinc-900 truncate uppercase tracking-wide">
                                 {mat.title}
                               </h4>
                               <p className="text-[9px] font-bold text-zinc-500 mt-1">
@@ -2692,7 +2910,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                             {isStaff ? (
                               <button
                                 onClick={() => handleDeleteMaterial(mat.id)}
-                                className="p-1.5 rounded-xl bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/10 hover:border-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors shrink-0 cursor-pointer"
+                                className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 transition-colors shrink-0 cursor-pointer"
                                 title="DELETE DOCUMENT"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -2700,10 +2918,10 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                             ) : null}
                           </div>
 
-                          <div className="flex items-center gap-2 mt-1 pt-2 border-t border-white/[0.04]">
+                          <div className="flex items-center gap-2 mt-1 pt-2 border-t border-zinc-200">
                             <button
                               onClick={() => setActiveSecureMaterial(mat)}
-                              className="flex-1 py-1.5 bg-cyan-400/5 hover:bg-cyan-400/10 border border-cyan-400/20 hover:border-cyan-400 text-cyan-400 text-xs font-bold uppercase tracking-wider rounded-xl transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                              className="flex-1 py-1.5 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-700 text-xs font-bold uppercase tracking-wider rounded-xl transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <BookOpen className="h-3.5 w-3.5" /> OPEN PDF
                             </button>
@@ -2712,7 +2930,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                                 href={mat.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="px-3 py-1.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.1] text-zinc-300 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                                className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-700 text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                                 title="Staff direct link access"
                               >
                                 DIRECT LINK
@@ -2734,12 +2952,12 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 <div className="flex justify-between items-center mb-3 select-none">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Academic Tasks</span>
-                    <span className="text-sm font-black text-white uppercase tracking-tight flex items-center gap-1.5 mt-0.5">
-                      <CheckSquare className="h-4 w-4 text-cyan-400" />
+                    <span className="text-sm font-black text-zinc-900 uppercase tracking-tight flex items-center gap-1.5 mt-0.5">
+                      <CheckSquare className="h-4 w-4 text-cyan-600" />
                       Study Plan ({tasks.length})
                     </span>
                   </div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-cyan-400 bg-cyan-400/5 border border-cyan-400/10 px-2 py-1 rounded-lg">
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-cyan-800 bg-cyan-50 border border-cyan-200 px-2 py-1 rounded-lg">
                     {isStaff ? "Staff Panel Active" : "Student View"}
                   </span>
                 </div>
@@ -2756,24 +2974,23 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                   else if (percent === 100) motivator = "All tasks completed! Today was incredibly productive! 🎉";
 
                   return (
-                    <div className="bg-gradient-to-br from-zinc-900/80 to-black/40 border border-white/[0.05] rounded-2xl p-4 mb-4 shadow-xl relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/10 transition-all duration-500" />
+                    <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 mb-4 shadow-sm relative overflow-hidden group">
                       <div className="flex justify-between items-center text-xs font-bold mb-2.5 relative z-10">
-                        <span className="text-zinc-300 uppercase tracking-wide flex items-center gap-1.5 font-extrabold">
-                          <Award className="h-4 w-4 text-cyan-400" />
+                        <span className="text-zinc-800 uppercase tracking-wide flex items-center gap-1.5 font-extrabold">
+                          <Award className="h-4 w-4 text-cyan-600" />
                           Today's Progress
                         </span>
-                        <span className="text-cyan-400 font-mono font-black text-xs">
+                        <span className="text-cyan-700 font-mono font-black text-xs">
                           {completedCount} / {totalCount} Completed ({percent}%)
                         </span>
                       </div>
-                      <div className="w-full bg-zinc-950/80 h-3 rounded-full overflow-hidden border border-white/[0.04] p-0.5 relative z-10">
+                      <div className="w-full bg-zinc-200 h-3 rounded-full overflow-hidden p-0.5 relative z-10">
                         <div 
-                          className="bg-gradient-to-r from-cyan-400 via-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_12px_rgba(34,211,238,0.4)]"
+                          className="bg-cyan-600 h-full rounded-full transition-all duration-700 ease-out"
                           style={{ width: `${percent}%` }}
                         />
                       </div>
-                      <p className="text-[10px] text-zinc-400 font-bold mt-2.5 uppercase tracking-wide italic select-none">
+                      <p className="text-[10px] text-zinc-600 font-bold mt-2.5 uppercase tracking-wide italic select-none">
                         {motivator}
                       </p>
                     </div>
@@ -2782,8 +2999,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
                 {/* Staff Upload Task Section */}
                 {isStaff && (
-                  <div className="bg-zinc-950/40 border border-white/[0.06] rounded-2xl p-4.5 flex flex-col gap-3.5 mb-4 shadow-xl">
-                    <div className="flex items-center gap-2 text-[10px] text-cyan-400 font-black uppercase tracking-wider border-b border-white/[0.04] pb-2">
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4.5 flex flex-col gap-3.5 mb-4 shadow-sm">
+                    <div className="flex items-center gap-2 text-[10px] text-cyan-700 font-black uppercase tracking-wider border-b border-zinc-200 pb-2">
                       <Cpu className="h-4 w-4" />
                       <span>Create Subject Study Task</span>
                     </div>
@@ -2803,7 +3020,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                           <select
                             value={taskSubject}
                             onChange={(e) => setTaskSubject(e.target.value)}
-                            className="w-full py-2 px-3 bg-zinc-900 border border-white/[0.08] focus:border-cyan-400 outline-none text-white text-xs rounded-xl transition-all cursor-pointer font-bold"
+                            className="w-full py-2 px-3 bg-white border border-zinc-200 focus:border-cyan-500 outline-none text-zinc-900 text-xs rounded-xl transition-all cursor-pointer font-bold"
                           >
                             <option value="Mathematics">📐 Mathematics</option>
                             <option value="Physics">⚛️ Physics</option>
@@ -2817,13 +3034,13 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
 
                         <div>
                           <label className="text-[9px] font-extrabold text-zinc-500 uppercase block mb-1">Set Priority</label>
-                          <div className="grid grid-cols-3 bg-zinc-900 p-0.5 rounded-xl border border-white/[0.08] h-[34px]">
+                          <div className="grid grid-cols-3 bg-white p-0.5 rounded-xl border border-zinc-200 h-[34px]">
                             {(["Low", "Medium", "High"] as const).map((p) => {
                               const isActive = taskPriority === p;
                               const colors = {
-                                Low: "text-cyan-400 border-cyan-500/20 bg-cyan-500/5",
-                                Medium: "text-amber-400 border-amber-500/20 bg-amber-500/5",
-                                High: "text-rose-400 border-rose-500/20 bg-rose-500/5"
+                                Low: "text-cyan-800 border-cyan-300 bg-cyan-50",
+                                Medium: "text-amber-800 border-amber-300 bg-amber-50",
+                                High: "text-rose-800 border-rose-300 bg-rose-50"
                               };
                               return (
                                 <button
@@ -2832,8 +3049,8 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                                   onClick={() => setTaskPriority(p)}
                                   className={`text-[9px] font-extrabold uppercase rounded-lg transition-all cursor-pointer ${
                                     isActive 
-                                      ? `${colors[p]} border font-black shadow-[0_0_8px_rgba(255,255,255,0.05)]` 
-                                      : "text-zinc-500 hover:text-zinc-300"
+                                      ? `${colors[p]} border font-black shadow-sm` 
+                                      : "text-zinc-500 hover:text-zinc-800"
                                   }`}
                                 >
                                   {p}
@@ -2852,14 +3069,14 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                           value={taskDesc}
                           onChange={(e) => setTaskDesc(e.target.value)}
                           placeholder="E.g. Solve exercises 1 to 5 from Section 4.2 of the Physics book."
-                          className="w-full py-2.5 px-3 bg-zinc-900 border border-white/[0.06] focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none text-white text-xs rounded-xl placeholder:text-zinc-600 transition-all resize-none"
+                          className="w-full py-2.5 px-3 bg-white border border-zinc-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none text-zinc-900 text-xs rounded-xl placeholder:text-zinc-400 transition-all resize-none"
                         />
                       </div>
 
                       <button
                         type="submit"
                         disabled={!taskDesc.trim()}
-                        className="w-full py-2.5 bg-cyan-400 hover:bg-cyan-500 text-zinc-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-[0.98]"
+                        className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shadow-md active:scale-[0.98]"
                       >
                         PUBLISH TASK FOR TODAY
                       </button>

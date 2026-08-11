@@ -52,17 +52,17 @@ export default function ParticipantModal({ isOpen, onClose, participant, isMe }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-md">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        className="w-full max-w-sm bg-zinc-900 border border-white/[0.08] rounded-[32px] relative overflow-hidden flex flex-col p-6 shadow-2xl animate-in duration-200"
+        className="w-full max-w-sm bg-white border border-zinc-200 rounded-[32px] relative overflow-hidden flex flex-col p-6 shadow-2xl animate-in duration-200"
         id="participant-modal-container"
       >
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.06] text-zinc-400 hover:text-white transition-all cursor-pointer"
+          className="absolute top-5 right-5 p-1.5 rounded-xl bg-zinc-100 border border-zinc-200 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900 transition-all cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
@@ -74,21 +74,21 @@ export default function ParticipantModal({ isOpen, onClose, participant, isMe }:
           >
             {getInitials(participant.username)}
             {participant.isActive && !participant.isOffline && (
-              <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-zinc-900 rounded-full flex items-center justify-center">
+              <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
                 <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
               </span>
             )}
           </div>
           <div className="flex flex-col mt-1">
-            <h3 className="text-lg font-black text-white flex items-center justify-center gap-2">
+            <h3 className="text-lg font-black text-zinc-900 flex items-center justify-center gap-2">
               {participant.username}
               {isMe && (
-                <span className="text-[9px] font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full uppercase tracking-wider">
                   You
                 </span>
               )}
             </h3>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-1">
+            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mt-1">
               Member ID: {participant.id.toUpperCase()}
             </p>
           </div>
@@ -97,47 +97,47 @@ export default function ParticipantModal({ isOpen, onClose, participant, isMe }:
         {/* Focus stats grid */}
         <div className="flex flex-col gap-4 mt-6">
           <div className="grid grid-cols-2 gap-3 select-none">
-            <div className="bg-white/[0.01] border border-white/[0.04] rounded-2xl p-4 flex flex-col">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex flex-col">
               <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Session focus</span>
-              <span className="text-lg font-black text-cyan-400 mt-1">{formatSec(liveSeconds)}</span>
-              <span className="text-[9px] text-zinc-400 font-medium mt-1">active in this space</span>
+              <span className="text-lg font-black text-cyan-700 mt-1">{formatSec(liveSeconds)}</span>
+              <span className="text-[9px] text-zinc-500 font-medium mt-1">active in this space</span>
             </div>
-            <div className="bg-white/[0.01] border border-white/[0.04] rounded-2xl p-4 flex flex-col">
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex flex-col">
               <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Today's total</span>
-              <span className="text-lg font-black text-indigo-400 mt-1">{formatSec(participant.dailySeconds)}</span>
-              <span className="text-[9px] text-zinc-400 font-medium mt-1">cumulative daily focus</span>
+              <span className="text-lg font-black text-indigo-700 mt-1">{formatSec(participant.dailySeconds)}</span>
+              <span className="text-[9px] text-zinc-500 font-medium mt-1">cumulative daily focus</span>
             </div>
           </div>
 
           {/* Detailed Status Table */}
-          <div className="bg-black/20 border border-white/[0.06] rounded-2xl p-4 flex flex-col gap-3 font-sans text-xs">
-            <div className="flex justify-between border-b border-white/[0.06] pb-2 text-zinc-500 font-bold uppercase text-[10px] tracking-wider">
+          <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex flex-col gap-3 font-sans text-xs">
+            <div className="flex justify-between border-b border-zinc-200 pb-2 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
               <span>Status Parameter</span>
               <span>Report Value</span>
             </div>
             
             <div className="flex justify-between items-center py-0.5">
-              <span className="text-zinc-400 font-medium">Channel Link</span>
-              <span className={`font-bold flex items-center gap-1 text-[11px] ${participant.isOffline ? "text-rose-400" : "text-emerald-400"}`}>
+              <span className="text-zinc-600 font-medium">Channel Link</span>
+              <span className={`font-bold flex items-center gap-1 text-[11px] ${participant.isOffline ? "text-rose-600" : "text-emerald-600"}`}>
                 <Radio className={`h-3 w-3 ${!participant.isOffline && "animate-pulse"}`} />
                 {participant.isOffline ? "OFFLINE" : "ONLINE CONNECTED"}
               </span>
             </div>
 
             <div className="flex justify-between items-center py-0.5">
-              <span className="text-zinc-400 font-medium">Focus Process</span>
-              <span className={`font-bold text-[11px] ${participant.isActive ? "text-cyan-400" : "text-zinc-500"}`}>
+              <span className="text-zinc-600 font-medium">Focus Process</span>
+              <span className={`font-bold text-[11px] ${participant.isActive ? "text-cyan-700" : "text-zinc-400"}`}>
                 {participant.isActive ? "RUNNING STUDY LOCK" : "IDLE / BREAK"}
               </span>
             </div>
 
             <div className="flex justify-between items-center py-0.5">
-              <span className="text-zinc-400 font-medium">System Role</span>
-              <span className="font-bold text-zinc-300 text-[11px]">
+              <span className="text-zinc-600 font-medium">System Role</span>
+              <span className="font-bold text-zinc-700 text-[11px]">
                 {participant.role === "admin" ? (
-                  <span className="text-indigo-400 font-black tracking-wide uppercase">SPACE OWNER</span>
+                  <span className="text-indigo-700 font-black tracking-wide uppercase">SPACE OWNER</span>
                 ) : participant.role === "co-host" ? (
-                  <span className="text-purple-400 font-bold uppercase">CO-HOST</span>
+                  <span className="text-purple-700 font-bold uppercase">CO-HOST</span>
                 ) : (
                   <span className="text-zinc-500 uppercase">STUDENT</span>
                 )}

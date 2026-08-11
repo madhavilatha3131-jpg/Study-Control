@@ -36,12 +36,71 @@ if (!fs.existsSync(SESSIONS_PATH)) {
 }
 
 // DB helper functions
+function ensureAdminUserSync(users: User[]): boolean {
+  let changed = false;
+  const adminIndex = users.findIndex((u) => u.username.toLowerCase() === "krishna@123");
+  const adminPasswordHash = bcrypt.hashSync("4518", 10);
+  const secHash = bcrypt.hashSync("4518", 10);
+
+  if (adminIndex === -1) {
+    const adminUser: User = {
+      id: "admin-krishna-123",
+      username: "Krishna@123",
+      email: "krishna@studyctrl.admin",
+      passwordHash: adminPasswordHash,
+      securityQuestion: "What is the system admin code?",
+      securityAnswerHash: secHash,
+      dailyStats: {},
+      pomoCompletions: {},
+      sessionHistory: [],
+      role: "admin",
+      isAdmin: true,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(adminUser);
+    changed = true;
+  } else {
+    if (
+      users[adminIndex].role !== "admin" ||
+      !users[adminIndex].isAdmin ||
+      users[adminIndex].username !== "Krishna@123" ||
+      !bcrypt.compareSync("4518", users[adminIndex].passwordHash)
+    ) {
+      users[adminIndex].username = "Krishna@123";
+      users[adminIndex].role = "admin";
+      users[adminIndex].isAdmin = true;
+      users[adminIndex].passwordHash = adminPasswordHash;
+      changed = true;
+    }
+  }
+
+  // Strictly demote any other user if they claim to be admin
+  users.forEach((u) => {
+    if (u.username.toLowerCase() !== "krishna@123") {
+      if (u.role === "admin" || u.isAdmin) {
+        u.role = "user";
+        u.isAdmin = false;
+        changed = true;
+      }
+    }
+  });
+
+  return changed;
+}
+
 function readUsers(): User[] {
   try {
     const data = fs.readFileSync(USERS_PATH, "utf-8");
-    return JSON.parse(data);
+    const users: User[] = JSON.parse(data);
+    if (ensureAdminUserSync(users)) {
+      writeUsers(users);
+    }
+    return users;
   } catch (err) {
-    return [];
+    const users: User[] = [];
+    ensureAdminUserSync(users);
+    writeUsers(users);
+    return users;
   }
 }
 
@@ -137,39 +196,36 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
-    const trimmedUsername = username.trim().toLowerCase();
-    if (trimmedUsername.length < 3 || trimmedUsername.length > 20) {
-      return res.status(400).json({ error: "Username must be between 3 and 20 characters" });
+    const trimmedRaw = username.trim();
+    const lowerUsername = trimmedRaw.toLowerCase();
+
+    if (lowerUsername.length < 3 || lowerUsername.length > 25) {
+      return res.status(400).json({ error: "Username must be between 3 and 25 characters" });
     }
 
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!usernameRegex.test(trimmedUsername)) {
-      return res.status(400).json({ error: "Username can only contain letters, numbers, and underscores" });
+    const isKrishnaAdmin = lowerUsername === "krishna@123";
+
+    const users = readUsers();
+    const existing = users.find((u) => u.username.toLowerCase() === lowerUsername);
+
+    if (existing) {
+      if (isKrishnaAdmin && password === "4518") {
+        const token = jwt.sign({ id: existing.id, username: "Krishna@123", role: "admin", isAdmin: true }, JWT_SECRET, { expiresIn: "30d" });
+        return res.json({
+          token,
+          user: { id: existing.id, username: "Krishna@123", role: "admin", isAdmin: true },
+        });
+      }
+      return res.status(400).json({ error: "Username is already occupied in the grid" });
     }
 
     let trimmedEmail = email ? email.trim().toLowerCase() : "";
     if (!trimmedEmail) {
-      trimmedEmail = `${trimmedUsername}@studyctrl.local`;
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(trimmedEmail)) {
-        return res.status(400).json({ error: "Invalid email address format" });
-      }
+      trimmedEmail = `${lowerUsername}@studyctrl.local`;
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
-    }
-
-    const users = readUsers();
-    const existing = users.find((u) => u.username.toLowerCase() === trimmedUsername);
-    if (existing) {
-      return res.status(400).json({ error: "Username is already occupied in the grid" });
-    }
-
-    const existingEmail = users.find((u) => u.email && u.email.toLowerCase() === trimmedEmail);
-    if (existingEmail) {
-      return res.status(400).json({ error: "Email address is already in use" });
+    if (password.length < 4) {
+      return res.status(400).json({ error: "Password must be at least 4 characters" });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -177,25 +233,31 @@ app.post("/api/auth/register", async (req, res) => {
     const securityAnswerHash = await bcrypt.hash(securityAnswerValue, 10);
 
     const newUser: User = {
-      id: Math.random().toString(36).substring(2, 11),
-      username, // Keep casing for display
+      id: isKrishnaAdmin ? "admin-krishna-123" : Math.random().toString(36).substring(2, 11),
+      username: isKrishnaAdmin ? "Krishna@123" : trimmedRaw,
       email: trimmedEmail,
       passwordHash,
-      securityQuestion: securityQuestion || "",
+      securityQuestion: securityQuestion || "Security Code",
       securityAnswerHash,
       dailyStats: {},
       sessionHistory: [],
+      role: isKrishnaAdmin ? "admin" : "user",
+      isAdmin: isKrishnaAdmin,
       createdAt: new Date().toISOString(),
     };
 
     users.push(newUser);
     writeUsers(users);
 
-    const token = jwt.sign({ id: newUser.id, username: newUser.username }, JWT_SECRET, { expiresIn: "30d" });
+    const token = jwt.sign(
+      { id: newUser.id, username: newUser.username, role: newUser.role, isAdmin: newUser.isAdmin },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
 
     return res.status(201).json({
       token,
-      user: { id: newUser.id, username: newUser.username },
+      user: { id: newUser.id, username: newUser.username, role: newUser.role, isAdmin: newUser.isAdmin },
     });
   } catch (err: any) {
     console.error(err);
@@ -212,8 +274,28 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ error: "Username and password required" });
     }
 
+    const trimmedRaw = username.trim();
+    const lowerUsername = trimmedRaw.toLowerCase();
+
     const users = readUsers();
-    const user = users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
+    const user = users.find((u) => u.username.toLowerCase() === lowerUsername);
+
+    const isKrishnaAdmin = lowerUsername === "krishna@123";
+
+    if (isKrishnaAdmin) {
+      if (password === "4518") {
+        const adminObj = user || users.find((u) => u.username.toLowerCase() === "krishna@123")!;
+        const token = jwt.sign(
+          { id: adminObj.id, username: "Krishna@123", role: "admin", isAdmin: true },
+          JWT_SECRET,
+          { expiresIn: "30d" }
+        );
+        return res.json({
+          token,
+          user: { id: adminObj.id, username: "Krishna@123", role: "admin", isAdmin: true },
+        });
+      }
+    }
 
     if (!user) {
       return res.status(401).json({ error: "Invalid handle or credentials" });
@@ -224,11 +306,18 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid handle or credentials" });
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: "30d" });
+    const role = isKrishnaAdmin ? "admin" : "user";
+    const isAdmin = isKrishnaAdmin;
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role, isAdmin },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
 
     return res.json({
       token,
-      user: { id: user.id, username: user.username },
+      user: { id: user.id, username: user.username, role, isAdmin },
     });
   } catch (err: any) {
     console.error(err);
@@ -637,6 +726,109 @@ app.post("/api/gemini/doubt", authenticateToken, async (req: any, res) => {
   }
 });
 
+// Helper to calculate focus streak (consecutive days with at least 1 completed pomodoro or focus session)
+function calculateStreak(pomoCompletions: Record<string, number> = {}, dailyStats: Record<string, number> = {}): number {
+  const hasActivity = (dateStr: string) => {
+    return (pomoCompletions[dateStr] || 0) > 0 || (dailyStats[dateStr] || 0) > 0;
+  };
+
+  const formatDate = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = new Date();
+  const todayStr = formatDate(today);
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = formatDate(yesterday);
+
+  let streak = 0;
+  let checkDate = new Date(today);
+
+  if (hasActivity(todayStr)) {
+    while (hasActivity(formatDate(checkDate))) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+  } else if (hasActivity(yesterdayStr)) {
+    checkDate = new Date(yesterday);
+    while (hasActivity(formatDate(checkDate))) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+  }
+
+  return streak;
+}
+
+// Record completed Pomodoro session
+app.post("/api/stats/pomodoro_complete", authenticateToken, (req: any, res) => {
+  try {
+    const users = readUsers();
+    const userIndex = users.findIndex((u) => u.id === req.user.id);
+    if (userIndex === -1) {
+      return res.status(404).json({ error: "User identity not found" });
+    }
+
+    const user = users[userIndex];
+    if (!user.pomoCompletions) {
+      user.pomoCompletions = {};
+    }
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    user.pomoCompletions[todayStr] = (user.pomoCompletions[todayStr] || 0) + 1;
+
+    if (!user.dailyStats) user.dailyStats = {};
+    if (!user.dailyStats[todayStr]) user.dailyStats[todayStr] = 0;
+
+    writeUsers(users);
+
+    const streak = calculateStreak(user.pomoCompletions, user.dailyStats);
+    const todayCount = user.pomoCompletions[todayStr];
+
+    return res.json({
+      message: "Pomodoro session completed",
+      streak,
+      todayCount,
+      pomoCompletions: user.pomoCompletions,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to record pomodoro completion" });
+  }
+});
+
+// Fetch user's Focus Streak and Pomodoro stats
+app.get("/api/stats/streak", authenticateToken, (req: any, res) => {
+  try {
+    const users = readUsers();
+    const user = users.find((u) => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User identity not found" });
+    }
+
+    const pomoCompletions = user.pomoCompletions || {};
+    const dailyStats = user.dailyStats || {};
+    const todayStr = new Date().toISOString().split("T")[0];
+    const streak = calculateStreak(pomoCompletions, dailyStats);
+    const todayCount = pomoCompletions[todayStr] || 0;
+
+    return res.json({
+      streak,
+      todayCount,
+      pomoCompletions,
+      dailyStats,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to fetch streak" });
+  }
+});
+
 // Daily activity chart stats endpoint
 app.get("/api/stats/daily_chart", authenticateToken, (req: any, res) => {
   try {
@@ -653,6 +845,7 @@ app.get("/api/stats/daily_chart", authenticateToken, (req: any, res) => {
       const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = d.toISOString().split("T")[0]; // YYYY-MM-DD
       const val = user.dailyStats[dateStr] || 0;
+      const pomos = user.pomoCompletions?.[dateStr] || 0;
       // Readable localized day label (e.g. "Mon")
       const dayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
       chartData.push({
@@ -660,6 +853,7 @@ app.get("/api/stats/daily_chart", authenticateToken, (req: any, res) => {
         label: dayLabel,
         minutes: Math.ceil(val / 60), // minutes focused
         seconds: val,
+        pomodoroCount: pomos,
       });
     }
 
@@ -691,13 +885,216 @@ app.get("/api/stats/daily_chart", authenticateToken, (req: any, res) => {
       }
     }
 
+    const streak = calculateStreak(user.pomoCompletions || {}, user.dailyStats || {});
+    const todayStr = new Date().toISOString().split("T")[0];
+    const todayPomoCount = user.pomoCompletions?.[todayStr] || 0;
+
     return res.json({ 
       dailyHistory: chartData,
-      allDaysHistory: allDaysHistory 
+      allDaysHistory: allDaysHistory,
+      streak,
+      todayPomoCount,
+      pomoCompletions: user.pomoCompletions || {}
     });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Failed to query stats" });
+  }
+});
+
+// Fetch Current Authenticated User Identity & Admin Status
+app.get("/api/auth/me", authenticateToken, (req: any, res) => {
+  try {
+    const users = readUsers();
+    const user = users.find((u) => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User identity not found" });
+    }
+    const isAdmin = user.username.toLowerCase() === "krishna@123";
+    return res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: isAdmin ? "admin" : "user",
+      isAdmin,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to get current user" });
+  }
+});
+
+// AI Gemini Endpoints
+// Multi-turn or single-turn AI Tutor
+app.post("/api/ai/chat", authenticateToken, async (req: any, res) => {
+  try {
+    const { message, history } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "GEMINI_API_KEY environment variable is missing on server." });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
+
+    const systemInstruction = "You are STUDYCTRL AI, an elite personal AI Study Mentor and Academic Assistant. Provide helpful, structured, clear explanations, code examples, markdown formatting, formulas, key points, and actionable study advice. Keep responses friendly, encouraging, and accurate.";
+
+    let contents: any[] = [];
+    if (history && Array.isArray(history)) {
+      history.forEach((h: any) => {
+        contents.push({
+          role: h.sender === "user" ? "user" : "model",
+          parts: [{ text: h.text }],
+        });
+      });
+    }
+    contents.push({ role: "user", parts: [{ text: message }] });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents,
+      config: { systemInstruction },
+    });
+
+    return res.json({ text: response.text || "I am ready to assist your study session!" });
+  } catch (err: any) {
+    console.error("AI Chat Error:", err);
+    return res.status(500).json({ error: err.message || "Failed to communicate with AI Tutor" });
+  }
+});
+
+// AI Material & Notes Summarizer
+app.post("/api/ai/summarize", authenticateToken, async (req: any, res) => {
+  try {
+    const { text, topic } = req.body;
+    if (!text && !topic) {
+      return res.status(400).json({ error: "Text or topic is required for summary" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "GEMINI_API_KEY environment variable is missing on server." });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
+
+    const prompt = `Provide a comprehensive, high-yield academic study summary for: "${text || topic}". Include:
+1. Executive Overview (2-3 sentences)
+2. Core Key Concepts (bulleted list)
+3. Essential Formulas & Definitions
+4. Top 3 Memory Mnemonics or Exam Flashcards`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+    });
+
+    return res.json({ text: response.text });
+  } catch (err: any) {
+    console.error("AI Summarize Error:", err);
+    return res.status(500).json({ error: err.message || "Failed to generate summary" });
+  }
+});
+
+// AI Practice Quiz Generator
+app.post("/api/ai/quiz", authenticateToken, async (req: any, res) => {
+  try {
+    const { topic } = req.body;
+    if (!topic) {
+      return res.status(400).json({ error: "Topic is required for quiz generation" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "GEMINI_API_KEY environment variable is missing on server." });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
+
+    const prompt = `Generate 5 multiple-choice practice quiz questions on the topic: "${topic}". Return a JSON array where each object has: "id" (string), "question" (string), "options" (array of 4 strings), "correctIndex" (number 0-3), and "explanation" (string).`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+
+    const rawText = response.text || "[]";
+    const questions = JSON.parse(rawText);
+    return res.json({ questions });
+  } catch (err: any) {
+    console.error("AI Quiz Error:", err);
+    return res.status(500).json({ error: err.message || "Failed to generate practice quiz" });
+  }
+});
+
+// AI Image Generation Endpoint (1K, 2K, 4K resolution options)
+app.post("/api/ai/generate-image", authenticateToken, async (req: any, res) => {
+  try {
+    const { prompt, aspectRatio, imageSize } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required for image generation" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "GEMINI_API_KEY environment variable is missing on server." });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
+
+    const validAspectRatio = aspectRatio || "1:1";
+    const validImageSize = imageSize || "1K";
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-image",
+      contents: {
+        parts: [{ text: `High quality study diagram, mind map, educational illustration or focus wallpaper for: ${prompt}` }],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: validAspectRatio,
+          imageSize: validImageSize,
+        },
+      },
+    });
+
+    let imageUrl = null;
+    if (response.candidates && response.candidates[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          const mime = part.inlineData.mimeType || "image/png";
+          imageUrl = `data:${mime};base64,${part.inlineData.data}`;
+          break;
+        }
+      }
+    }
+
+    if (!imageUrl) {
+      return res.status(500).json({ error: "Failed to generate image artifact from Gemini" });
+    }
+
+    return res.json({ imageUrl });
+  } catch (err: any) {
+    console.error("AI Image Generation Error:", err);
+    return res.status(500).json({ error: err.message || "Failed to generate image" });
   }
 });
 
@@ -894,11 +1291,9 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
         const user = users.find((u) => u.id === userId);
         const dailySec = user?.dailyStats?.[today] || 0;
 
+        const isKrishnaAdmin = username.trim().toLowerCase() === "krishna@123";
         let part: Participant = session.participants[userId];
         if (!part) {
-          // If no one is currently designated as active/offline admin, make this user the admin.
-          // This allows testing roles easily since there's always an admin.
-          const hasAdmin = Object.values(session.participants).some((p) => p.role === "admin");
           part = {
             id: userId,
             username: username,
@@ -907,14 +1302,12 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
             totalSeconds: 0,
             focusStartedAt: null,
             dailySeconds: dailySec,
-            role: hasAdmin ? "user" : "admin",
+            role: isKrishnaAdmin ? "admin" : "user",
           };
         } else {
           part.isOffline = false;
           part.dailySeconds = dailySec;
-          if (!part.role) {
-            part.role = "user";
-          }
+          part.role = isKrishnaAdmin ? "admin" : "user";
         }
 
         session.participants[userId] = part;

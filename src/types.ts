@@ -26,10 +26,30 @@ export interface User {
   securityQuestion: string;
   securityAnswerHash: string;
   dailyStats: DailyStats;
+  pomoCompletions?: Record<string, number>;
   sessionHistory?: UserSessionHistory[];
   resetCode?: string;
   resetCodeExpires?: number;
+  role?: "admin" | "user";
+  isAdmin?: boolean;
   createdAt: string;
+}
+
+export interface AIChatMessage {
+  id: string;
+  sender: "user" | "ai";
+  text: string;
+  timestamp: string;
+  image?: string;
+  isStreaming?: boolean;
+}
+
+export interface AIQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
 }
 
 export interface RoomConfig {
