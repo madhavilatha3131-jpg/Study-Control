@@ -1,0 +1,16 @@
+[
+  {
+    "id": "admin-jagannath-root",
+    "username": "JaiJagannath",
+    "email": "admin@studyctrl.security",
+    "passwordHash": "$2b$10$w9FjT2lJ.yP3n4sH/X0m8.o1t5fR5e7Y9u3i1k1m1q1w1e1r1t1y",
+    "securityQuestion": "Administrative security clearance verification code?",
+    "securityAnswerHash": "$2b$10$w9FjT2lJ.yP3n4sH/X0m8.o1t5fR5e7Y9u3i1k1m1q1w1e1r1t1y",
+    "dailyStats": {},
+    "pomoCompletions": {},
+    "sessionHistory": [],
+    "role": "admin",
+    "isAdmin": true,
+    "createdAt": "2026-08-21T03:48:00.000Z"
+  }
+]

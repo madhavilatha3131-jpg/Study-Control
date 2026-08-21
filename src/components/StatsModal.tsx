@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { X, Trophy, Zap, Clock, ShieldCheck, Archive, Trash2, RotateCcw, Search, Calendar, Layers, TrendingUp, Flame, Sparkles, Activity } from "lucide-react";
+import { X, Trophy, Zap, Clock, ShieldCheck, Archive, Trash2, RotateCcw, Search, Calendar, Layers, TrendingUp, Flame, Sparkles, Activity, User, KeyRound, Lock, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface DailyData {
@@ -30,7 +30,7 @@ interface StatsModalProps {
 }
 
 export default function StatsModal({ isOpen, onClose, token, username }: StatsModalProps) {
-  const [activeTab, setActiveTab] = useState<"diagnostics" | "sessions">("diagnostics");
+  const [activeTab, setActiveTab] = useState<"diagnostics" | "sessions" | "account">("diagnostics");
   
   // Daily Stats States
   const [data, setData] = useState<DailyData[]>([]);
@@ -44,6 +44,17 @@ export default function StatsModal({ isOpen, onClose, token, username }: StatsMo
   const [sessionsError, setSessionsError] = useState("");
   const [sessionFilter, setSessionFilter] = useState<"active" | "archived" | "all">("active");
   const [sessionSearch, setSessionSearch] = useState("");
+
+  // Account Settings States
+  const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [securityQuestion, setSecurityQuestion] = useState("");
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [profileError, setProfileError] = useState("");
 
   const loadStats = async () => {
     try {
@@ -122,6 +133,70 @@ export default function StatsModal({ isOpen, onClose, token, username }: StatsMo
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileError("");
+    setProfileSuccess("");
+
+    if (newPassword && newPassword !== confirmNewPassword) {
+      setProfileError("New cipher passwords do not match");
+      return;
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      setProfileError("New cipher password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setProfileSaving(true);
+      const res = await fetch("/api/users/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: email.trim() || undefined,
+          currentPassword: currentPassword || undefined,
+          newPassword: newPassword || undefined,
+          securityQuestion: securityQuestion.trim() || undefined,
+          securityAnswer: securityAnswer.trim() || undefined,
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        setProfileSuccess(resData.message || "Account changes successfully saved to database!");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setSecurityAnswer("");
+
+        // Also update saved accounts list in localStorage
+        try {
+          const savedStr = localStorage.getItem("study_saved_accounts");
+          if (savedStr) {
+            const savedList = JSON.parse(savedStr);
+            const updated = savedList.map((acc: any) =>
+              acc.username.toLowerCase() === username.toLowerCase()
+                ? { ...acc, email: email.trim() || acc.email }
+                : acc
+            );
+            localStorage.setItem("study_saved_accounts", JSON.stringify(updated));
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        setProfileError(resData.error || "Profile update rejected");
+      }
+    } catch (err) {
+      setProfileError("Failed to synchronize account changes with server");
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -212,7 +287,7 @@ export default function StatsModal({ isOpen, onClose, token, username }: StatsMo
             }`}
           >
             <TrendingUp className="h-4 w-4" />
-            Performance & All Days
+            Performance
           </button>
           <button
             onClick={() => setActiveTab("sessions")}
@@ -223,7 +298,18 @@ export default function StatsModal({ isOpen, onClose, token, username }: StatsMo
             }`}
           >
             <Layers className="h-4 w-4" />
-            Session History
+            Sessions
+          </button>
+          <button
+            onClick={() => setActiveTab("account")}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer rajdhani uppercase tracking-wider ${
+              activeTab === "account"
+                ? "bg-pink-600 text-white font-extrabold shadow-[0_0_15px_rgba(236,72,153,0.4)]"
+                : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            <KeyRound className="h-4 w-4" />
+            Account & Security
           </button>
         </div>
 
@@ -368,7 +454,7 @@ export default function StatsModal({ isOpen, onClose, token, username }: StatsMo
               </div>
             </div>
           )
-        ) : (
+        ) : activeTab === "sessions" ? (
           /* SESSIONS TAB VIEW */
           <div className="flex flex-col gap-4 flex-grow min-h-0 select-none">
             {/* Controls Bar */}
@@ -459,6 +545,151 @@ export default function StatsModal({ isOpen, onClose, token, username }: StatsMo
                 ))
               )}
             </div>
+          </div>
+        ) : (
+          /* ACCOUNT & SECURITY SETTINGS TAB */
+          <div className="flex flex-col gap-5 flex-1 overflow-y-auto min-h-0 pr-1 scrollbar-thin">
+            <div className="bg-[#071026] border border-cyan-500/30 rounded-2xl p-4 flex items-center justify-between shadow-[0_0_15px_rgba(0,240,255,0.08)]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400">
+                  <User className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-white orbitron">{username}</h4>
+                  <p className="text-[11px] text-zinc-400 font-mono">
+                    {username.toLowerCase() === "jaijagannath" ? "Supreme Admin Node" : "Standard Cadet Operative"} • Status: Active
+                  </p>
+                </div>
+              </div>
+              <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full font-mono border ${
+                username.toLowerCase() === "jaijagannath"
+                  ? "bg-pink-500/10 text-pink-400 border-pink-500/40"
+                  : "bg-cyan-500/10 text-cyan-400 border-cyan-500/40"
+              }`}>
+                {username.toLowerCase() === "jaijagannath" ? "SYSTEM ADMIN" : "CADET NODE"}
+              </span>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
+              <div className="bg-[#050b1d] border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                  <User className="h-3.5 w-3.5" />
+                  Operative Contact Information
+                </span>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase text-zinc-400 font-bold font-mono">
+                    Contact Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="operative@domain.com"
+                    className="w-full bg-[#071026] border border-cyan-500/20 focus:border-cyan-400 py-2.5 px-3.5 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-[#050b1d] border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+                <span className="text-[11px] font-bold text-pink-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                  <Lock className="h-3.5 w-3.5" />
+                  Update Cipher Password
+                </span>
+                
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase text-zinc-400 font-bold font-mono">
+                    Current Cipher Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    className="w-full bg-[#071026] border border-pink-500/20 focus:border-pink-400 py-2.5 px-3.5 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition-all font-mono tracking-widest"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] uppercase text-zinc-400 font-bold font-mono">
+                      New Cipher Password
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Min 6 characters"
+                      className="w-full bg-[#071026] border border-pink-500/20 focus:border-pink-400 py-2.5 px-3.5 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition-all font-mono tracking-widest"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] uppercase text-zinc-400 font-bold font-mono">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      placeholder="Re-enter new password"
+                      className="w-full bg-[#071026] border border-pink-500/20 focus:border-pink-400 py-2.5 px-3.5 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition-all font-mono tracking-widest"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#050b1d] border border-zinc-800 rounded-2xl p-4 flex flex-col gap-3">
+                <span className="text-[11px] font-bold text-purple-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Security Question / Key Recovery
+                </span>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase text-zinc-400 font-bold font-mono">
+                    Security Question
+                  </label>
+                  <input
+                    type="text"
+                    value={securityQuestion}
+                    onChange={(e) => setSecurityQuestion(e.target.value)}
+                    placeholder="e.g. What is your favorite physics formula?"
+                    className="w-full bg-[#071026] border border-purple-500/20 focus:border-purple-400 py-2.5 px-3.5 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition-all font-mono"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] uppercase text-zinc-400 font-bold font-mono">
+                    Security Answer
+                  </label>
+                  <input
+                    type="text"
+                    value={securityAnswer}
+                    onChange={(e) => setSecurityAnswer(e.target.value)}
+                    placeholder="Enter security answer"
+                    className="w-full bg-[#071026] border border-purple-500/20 focus:border-purple-400 py-2.5 px-3.5 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              {profileSuccess && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/40 rounded-xl text-emerald-400 text-xs font-mono flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>{profileSuccess}</span>
+                </div>
+              )}
+
+              {profileError && (
+                <div className="p-3 bg-pink-500/10 border border-pink-500/40 rounded-xl text-pink-400 text-xs font-mono flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{profileError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={profileSaving}
+                className="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-[0_0_20px_rgba(0,240,255,0.3)] disabled:opacity-50 orbitron"
+              >
+                {profileSaving ? "COMMITTING CHANGES..." : "SAVE ACCOUNT & SECURITY CHANGES"}
+              </button>
+            </form>
           </div>
         )}
       </motion.div>

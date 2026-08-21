@@ -18,6 +18,16 @@ export interface UserSessionHistory {
   isArchived: boolean;
 }
 
+export interface SavedAccount {
+  id: string;
+  username: string;
+  email?: string;
+  role?: "admin" | "user";
+  isAdmin?: boolean;
+  token?: string;
+  lastLogin: string;
+}
+
 export interface User {
   id: string;
   username: string;

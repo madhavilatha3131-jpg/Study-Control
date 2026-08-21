@@ -38,17 +38,24 @@ if (!fs.existsSync(SESSIONS_PATH)) {
 // DB helper functions
 function ensureAdminUserSync(users: User[]): boolean {
   let changed = false;
-  const adminIndex = users.findIndex((u) => u.username.toLowerCase() === "krishna@123");
-  const adminPasswordHash = bcrypt.hashSync("4518", 10);
-  const secHash = bcrypt.hashSync("4518", 10);
+  // Remove any legacy admin format
+  const legacyAdminIndex = users.findIndex((u) => u.username.toLowerCase() === "krishna@123");
+  if (legacyAdminIndex !== -1) {
+    users.splice(legacyAdminIndex, 1);
+    changed = true;
+  }
+
+  const adminIndex = users.findIndex((u) => u.username.toLowerCase() === "jaijagannath");
+  const adminPasswordHash = bcrypt.hashSync("JaiKrishna", 10);
+  const secHash = bcrypt.hashSync("JaiKrishna", 10);
 
   if (adminIndex === -1) {
     const adminUser: User = {
-      id: "admin-krishna-123",
-      username: "Krishna@123",
-      email: "krishna@studyctrl.admin",
+      id: "admin-jagannath-root",
+      username: "JaiJagannath",
+      email: "admin@studyctrl.security",
       passwordHash: adminPasswordHash,
-      securityQuestion: "What is the system admin code?",
+      securityQuestion: "Administrative security clearance verification code?",
       securityAnswerHash: secHash,
       dailyStats: {},
       pomoCompletions: {},
@@ -63,10 +70,10 @@ function ensureAdminUserSync(users: User[]): boolean {
     if (
       users[adminIndex].role !== "admin" ||
       !users[adminIndex].isAdmin ||
-      users[adminIndex].username !== "Krishna@123" ||
-      !bcrypt.compareSync("4518", users[adminIndex].passwordHash)
+      users[adminIndex].username !== "JaiJagannath" ||
+      !bcrypt.compareSync("JaiKrishna", users[adminIndex].passwordHash)
     ) {
-      users[adminIndex].username = "Krishna@123";
+      users[adminIndex].username = "JaiJagannath";
       users[adminIndex].role = "admin";
       users[adminIndex].isAdmin = true;
       users[adminIndex].passwordHash = adminPasswordHash;
@@ -76,7 +83,7 @@ function ensureAdminUserSync(users: User[]): boolean {
 
   // Strictly demote any other user if they claim to be admin
   users.forEach((u) => {
-    if (u.username.toLowerCase() !== "krishna@123") {
+    if (u.username.toLowerCase() !== "jaijagannath") {
       if (u.role === "admin" || u.isAdmin) {
         u.role = "user";
         u.isAdmin = false;
@@ -107,6 +114,10 @@ function readUsers(): User[] {
 function writeUsers(users: User[]) {
   fs.writeFileSync(USERS_PATH, JSON.stringify(users, null, 2));
 }
+
+// Immediately bootstrap databases on startup
+readUsers();
+readSessions();
 
 function readSessions(): Record<string, SessionState> {
   try {
@@ -165,8 +176,48 @@ function writeSessions(sessions: Record<string, SessionState>) {
   fs.writeFileSync(SESSIONS_PATH, JSON.stringify(sessions, null, 2));
 }
 
+// Enable Express Trust Proxy for Cloud Run / CDN / Regional Reverse Proxies (Jio, Airtel, Vi, etc.)
+app.set("trust proxy", true);
+
+// Global Open CORS & Network Optimization Middleware
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, X-Forwarded-For, X-Forwarded-Proto"
+  );
+  res.setHeader("Access-Control-Max-Age", "86400");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "no-referrer-when-downgrade");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Express parsing
 app.use(express.json({ limit: "50mb" }));
+
+// Universal Health & Connectivity Checks (Used by Cloud Run probes & regional ISP gateways)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    network: "online",
+    region: "global",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
 
 // Auth Middlewares
 function authenticateToken(req: any, res: any, next: any) {
@@ -203,17 +254,17 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ error: "Username must be between 3 and 25 characters" });
     }
 
-    const isKrishnaAdmin = lowerUsername === "krishna@123";
+    const isJagannathAdmin = lowerUsername === "jaijagannath";
 
     const users = readUsers();
     const existing = users.find((u) => u.username.toLowerCase() === lowerUsername);
 
     if (existing) {
-      if (isKrishnaAdmin && password === "4518") {
-        const token = jwt.sign({ id: existing.id, username: "Krishna@123", role: "admin", isAdmin: true }, JWT_SECRET, { expiresIn: "30d" });
+      if (isJagannathAdmin && (password === "JaiKrishna" || (await bcrypt.compare(password, existing.passwordHash)))) {
+        const token = jwt.sign({ id: existing.id, username: "JaiJagannath", role: "admin", isAdmin: true }, JWT_SECRET, { expiresIn: "30d" });
         return res.json({
           token,
-          user: { id: existing.id, username: "Krishna@123", role: "admin", isAdmin: true },
+          user: { id: existing.id, username: "JaiJagannath", role: "admin", isAdmin: true },
         });
       }
       return res.status(400).json({ error: "Username is already occupied in the grid" });
@@ -233,16 +284,16 @@ app.post("/api/auth/register", async (req, res) => {
     const securityAnswerHash = await bcrypt.hash(securityAnswerValue, 10);
 
     const newUser: User = {
-      id: isKrishnaAdmin ? "admin-krishna-123" : Math.random().toString(36).substring(2, 11),
-      username: isKrishnaAdmin ? "Krishna@123" : trimmedRaw,
+      id: isJagannathAdmin ? "admin-jagannath-root" : Math.random().toString(36).substring(2, 11),
+      username: isJagannathAdmin ? "JaiJagannath" : trimmedRaw,
       email: trimmedEmail,
       passwordHash,
       securityQuestion: securityQuestion || "Security Code",
       securityAnswerHash,
       dailyStats: {},
       sessionHistory: [],
-      role: isKrishnaAdmin ? "admin" : "user",
-      isAdmin: isKrishnaAdmin,
+      role: isJagannathAdmin ? "admin" : "user",
+      isAdmin: isJagannathAdmin,
       createdAt: new Date().toISOString(),
     };
 
@@ -280,19 +331,19 @@ app.post("/api/auth/login", async (req, res) => {
     const users = readUsers();
     const user = users.find((u) => u.username.toLowerCase() === lowerUsername);
 
-    const isKrishnaAdmin = lowerUsername === "krishna@123";
+    const isJagannathAdmin = lowerUsername === "jaijagannath";
 
-    if (isKrishnaAdmin) {
-      if (password === "4518") {
-        const adminObj = user || users.find((u) => u.username.toLowerCase() === "krishna@123")!;
+    if (isJagannathAdmin) {
+      if (password === "JaiKrishna") {
+        const adminObj = user || users.find((u) => u.username.toLowerCase() === "jaijagannath")!;
         const token = jwt.sign(
-          { id: adminObj.id, username: "Krishna@123", role: "admin", isAdmin: true },
+          { id: adminObj.id, username: "JaiJagannath", role: "admin", isAdmin: true },
           JWT_SECRET,
           { expiresIn: "30d" }
         );
         return res.json({
           token,
-          user: { id: adminObj.id, username: "Krishna@123", role: "admin", isAdmin: true },
+          user: { id: adminObj.id, username: "JaiJagannath", role: "admin", isAdmin: true },
         });
       }
     }
@@ -306,8 +357,8 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid handle or credentials" });
     }
 
-    const role = isKrishnaAdmin ? "admin" : "user";
-    const isAdmin = isKrishnaAdmin;
+    const role = isJagannathAdmin || user.isAdmin ? "admin" : "user";
+    const isAdmin = isJagannathAdmin || Boolean(user.isAdmin);
 
     const token = jwt.sign(
       { id: user.id, username: user.username, role, isAdmin },
@@ -322,6 +373,59 @@ app.post("/api/auth/login", async (req, res) => {
   } catch (err: any) {
     console.error(err);
     return res.status(500).json({ error: "Login protocol failure" });
+  }
+});
+
+// Dedicated Secret Admin Login endpoint (triggers from blue dot double click)
+app.post("/api/auth/admin-login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Administrative identifier and password required" });
+    }
+
+    const trimmedUser = username.trim();
+    const trimmedPass = password.trim();
+
+    const users = readUsers();
+    let adminUser = users.find((u) => u.username.toLowerCase() === trimmedUser.toLowerCase());
+
+    if (trimmedUser.toLowerCase() === "jaijagannath" && trimmedPass === "JaiKrishna") {
+      if (!adminUser) {
+        ensureAdminUserSync(users);
+        adminUser = users.find((u) => u.username.toLowerCase() === "jaijagannath")!;
+      }
+      const token = jwt.sign(
+        { id: adminUser.id, username: "JaiJagannath", role: "admin", isAdmin: true },
+        JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+      return res.json({
+        token,
+        user: { id: adminUser.id, username: "JaiJagannath", role: "admin", isAdmin: true },
+      });
+    }
+
+    if (adminUser && (adminUser.isAdmin || adminUser.role === "admin")) {
+      const match = await bcrypt.compare(trimmedPass, adminUser.passwordHash);
+      if (match) {
+        const token = jwt.sign(
+          { id: adminUser.id, username: adminUser.username, role: "admin", isAdmin: true },
+          JWT_SECRET,
+          { expiresIn: "30d" }
+        );
+        return res.json({
+          token,
+          user: { id: adminUser.id, username: adminUser.username, role: "admin", isAdmin: true },
+        });
+      }
+    }
+
+    return res.status(401).json({ error: "Access Denied: Invalid Administrative Clearance" });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ error: "Admin authorization failed" });
   }
 });
 
@@ -476,6 +580,84 @@ app.post("/api/auth/reset-password", async (req, res) => {
   } catch (err: any) {
     console.error(err);
     return res.status(500).json({ error: "Secure password reset process failed" });
+  }
+});
+
+// List of registered accounts (public metadata only, never revealing admin ID)
+app.get("/api/auth/accounts", (req, res) => {
+  try {
+    const users = readUsers();
+    // Exclude any admin accounts to ensure admin ID is never revealed publicly
+    const accounts = users
+      .filter((u) => !u.isAdmin && u.role !== "admin" && u.username.toLowerCase() !== "jaijagannath")
+      .map((u) => ({
+        id: u.id,
+        username: u.username,
+        email: u.email || "",
+        role: "user" as const,
+        isAdmin: false,
+        createdAt: u.createdAt,
+      }));
+    return res.json({ accounts });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to retrieve registered accounts" });
+  }
+});
+
+// Update profile / security settings for authenticated user
+app.post("/api/users/profile", authenticateToken, async (req: any, res) => {
+  try {
+    const { email, currentPassword, newPassword, securityQuestion, securityAnswer } = req.body;
+    const users = readUsers();
+    const userIndex = users.findIndex((u) => u.id === req.user.id);
+    if (userIndex === -1) {
+      return res.status(404).json({ error: "User identity not found" });
+    }
+
+    const user = users[userIndex];
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: "Current cipher password is required to set a new password" });
+      }
+      const match = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!match) {
+        return res.status(400).json({ error: "Current cipher password is incorrect" });
+      }
+      if (newPassword.length < 4) {
+        return res.status(400).json({ error: "New password must be at least 4 characters" });
+      }
+      user.passwordHash = await bcrypt.hash(newPassword, 10);
+    }
+
+    if (email !== undefined) {
+      user.email = email.trim().toLowerCase();
+    }
+
+    if (securityQuestion) {
+      user.securityQuestion = securityQuestion.trim();
+    }
+
+    if (securityAnswer) {
+      user.securityAnswerHash = await bcrypt.hash(securityAnswer.trim().toLowerCase(), 10);
+    }
+
+    writeUsers(users);
+
+    return res.json({
+      message: "Account settings saved securely",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        isAdmin: user.isAdmin,
+      },
+    });
+  } catch (err: any) {
+    console.error("Profile update failure", err);
+    return res.status(500).json({ error: "Failed to update profile settings" });
   }
 });
 
@@ -910,7 +1092,7 @@ app.get("/api/auth/me", authenticateToken, (req: any, res) => {
     if (!user) {
       return res.status(404).json({ error: "User identity not found" });
     }
-    const isAdmin = user.username.toLowerCase() === "krishna@123";
+    const isAdmin = Boolean(user.isAdmin || user.role === "admin" || user.username.toLowerCase() === "jaijagannath");
     return res.json({
       id: user.id,
       username: user.username,
@@ -1219,7 +1401,7 @@ function stopAndSaveFocusTime(userId: string, roomCode: string) {
 // Attach upgrades to Node Server
 server.on("upgrade", (request, socket, head) => {
   try {
-    const urlObj = new URL(request.url || "", `http://${request.headers.host}`);
+    const urlObj = new URL(request.url || "", `http://${request.headers.host || "localhost"}`);
     const token = urlObj.searchParams.get("token");
 
     if (!token) {
@@ -1244,10 +1426,28 @@ server.on("upgrade", (request, socket, head) => {
   }
 });
 
+// Periodic WebSocket Keepalive Heartbeat for CGNAT / ISP Mobile Networks (Jio, Airtel, etc.)
+setInterval(() => {
+  wss.clients.forEach((ws: any) => {
+    if (ws.isAlive === false) {
+      return ws.terminate();
+    }
+    ws.isAlive = false;
+    try {
+      ws.ping();
+    } catch (_) {}
+  });
+}, 25000);
+
 wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
   let joinedRoomCode = "";
   const userId = userDecoded.id;
   const username = userDecoded.username;
+
+  (ws as any).isAlive = true;
+  ws.on("pong", () => {
+    (ws as any).isAlive = true;
+  });
 
   ws.on("message", (msgString: string) => {
     try {
@@ -1291,7 +1491,7 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
         const user = users.find((u) => u.id === userId);
         const dailySec = user?.dailyStats?.[today] || 0;
 
-        const isKrishnaAdmin = username.trim().toLowerCase() === "krishna@123";
+        const isSupremeAdmin = Boolean(user?.isAdmin || user?.role === "admin" || username.trim().toLowerCase() === "jaijagannath");
         let part: Participant = session.participants[userId];
         if (!part) {
           part = {
@@ -1302,12 +1502,12 @@ wss.on("connection", (ws: WebSocket, request, userDecoded: any) => {
             totalSeconds: 0,
             focusStartedAt: null,
             dailySeconds: dailySec,
-            role: isKrishnaAdmin ? "admin" : "user",
+            role: isSupremeAdmin ? "admin" : "user",
           };
         } else {
           part.isOffline = false;
           part.dailySeconds = dailySec;
-          part.role = isKrishnaAdmin ? "admin" : "user";
+          part.role = isSupremeAdmin ? "admin" : "user";
         }
 
         session.participants[userId] = part;

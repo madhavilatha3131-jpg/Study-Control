@@ -7,10 +7,11 @@ import {
   Home, RefreshCw, Bell, AlertTriangle, ShieldCheck, CheckSquare, Sparkles, Flame, CheckCircle2, Atom
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { Participant, Message, RoomConfig, User, StudyMaterial, StudyTask } from "./types";
+import { Participant, Message, RoomConfig, User, StudyMaterial, StudyTask, SavedAccount } from "./types";
 import StatsModal from "./components/StatsModal";
 import ParticipantModal from "./components/ParticipantModal";
 import { PhysicsOTAdvancedQuiz } from "./components/PhysicsOTAdvancedQuiz";
+import { AdminLoginModal } from "./components/AdminLoginModal";
 
 // --- MOTIVATIONAL QUOTES ---
 export const STUDY_QUOTES = [
@@ -26,10 +27,14 @@ export const STUDY_QUOTES = [
 
 // --- AUTH CONTEXT & PROVIDER ---
 interface AuthContextType {
-  user: { id: string; username: string } | null;
+  user: { id: string; username: string; role?: string; isAdmin?: boolean; email?: string } | null;
   token: string | null;
-  login: (token: string, user: { id: string; username: string }) => void;
+  login: (token: string, user: { id: string; username: string; role?: string; isAdmin?: boolean; email?: string }) => void;
   logout: () => void;
+  savedAccounts: SavedAccount[];
+  switchAccount: (account: SavedAccount) => void;
+  removeSavedAccount: (idOrUsername: string) => void;
+  refreshSavedAccounts: () => void;
   isLoading: boolean;
 }
 
@@ -42,12 +47,32 @@ function useAuth() {
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<{ id: string; username: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; username: string; role?: string; isAdmin?: boolean; email?: string } | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [, setLocation] = useLocation();
 
+  const loadSavedAccountsFromStorage = (): SavedAccount[] => {
+    try {
+      const raw = localStorage.getItem("study_saved_accounts");
+      if (raw) {
+        return JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [];
+  };
+
+  const refreshSavedAccounts = () => {
+    setSavedAccounts(loadSavedAccountsFromStorage());
+  };
+
   useEffect(() => {
+    const loadedSaved = loadSavedAccountsFromStorage();
+    setSavedAccounts(loadedSaved);
+
     const storedToken = localStorage.getItem("study_auth_token");
     const storedUser = localStorage.getItem("study_auth_user");
 
@@ -61,6 +86,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = await res.json();
             setUser(data);
             setToken(storedToken);
+
+            // Update in savedAccounts list
+            setSavedAccounts((prev) => {
+              const filtered = prev.filter((a) => a.username.toLowerCase() !== data.username.toLowerCase());
+              const updated: SavedAccount[] = [
+                {
+                  id: data.id,
+                  username: data.username,
+                  email: data.email,
+                  role: data.role || (data.username.toLowerCase() === "jaijagannath" ? "admin" : "user"),
+                  isAdmin: data.isAdmin || data.username.toLowerCase() === "jaijagannath",
+                  token: storedToken,
+                  lastLogin: new Date().toISOString(),
+                },
+                ...filtered,
+              ];
+              localStorage.setItem("study_saved_accounts", JSON.stringify(updated));
+              return updated;
+            });
           } else {
             // Token expired or invalid
             localStorage.removeItem("study_auth_token");
@@ -76,11 +120,31 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     verifyToken();
   }, []);
 
-  const login = (newToken: string, newUser: { id: string; username: string }) => {
+  const login = (newToken: string, newUser: { id: string; username: string; role?: string; isAdmin?: boolean; email?: string }) => {
     localStorage.setItem("study_auth_token", newToken);
     localStorage.setItem("study_auth_user", JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+
+    // Save to device's persistent saved accounts list
+    setSavedAccounts((prev) => {
+      const filtered = prev.filter((a) => a.username.toLowerCase() !== newUser.username.toLowerCase());
+      const updated: SavedAccount[] = [
+        {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+          role: (newUser.role as "admin" | "user") || (newUser.username.toLowerCase() === "jaijagannath" ? "admin" : "user"),
+          isAdmin: newUser.isAdmin || newUser.username.toLowerCase() === "jaijagannath",
+          token: newToken,
+          lastLogin: new Date().toISOString(),
+        },
+        ...filtered,
+      ];
+      localStorage.setItem("study_saved_accounts", JSON.stringify(updated));
+      return updated;
+    });
+
     setLocation("/session/NEXT_TOPPERS");
   };
 
@@ -92,8 +156,38 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     setLocation("/login");
   };
 
+  const switchAccount = async (acc: SavedAccount) => {
+    if (acc.token) {
+      try {
+        const res = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${acc.token}` },
+        });
+        if (res.ok) {
+          const freshUser = await res.json();
+          login(acc.token, freshUser);
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    // If token invalid, redirect to login with username pre-selected
+    localStorage.setItem("study_prefill_username", acc.username);
+    logout();
+  };
+
+  const removeSavedAccount = (idOrUsername: string) => {
+    setSavedAccounts((prev) => {
+      const next = prev.filter(
+        (a) => a.id !== idOrUsername && a.username.toLowerCase() !== idOrUsername.toLowerCase()
+      );
+      localStorage.setItem("study_saved_accounts", JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, savedAccounts, switchAccount, removeSavedAccount, refreshSavedAccounts, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -126,14 +220,37 @@ function GuardedRoute({ path, component: Component }: { path: string; component:
 
 // --- PAGE 1: LOGIN (/login) ---
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, savedAccounts, removeSavedAccount, switchAccount } = useAuth();
   const [, setLocation] = useLocation();
 
   // Login variables
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(() => {
+    return localStorage.getItem("study_prefill_username") || "";
+  });
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginPending, setLoginPending] = useState(false);
+  const [serverAccounts, setServerAccounts] = useState<any[]>([]);
+  const [showManualForm, setShowManualForm] = useState(false);
+
+  useEffect(() => {
+    // Clear prefill once read
+    localStorage.removeItem("study_prefill_username");
+
+    // Fetch registered accounts from server to make discovering & picking accounts effortless
+    const fetchAccounts = async () => {
+      try {
+        const res = await fetch("/api/auth/accounts");
+        if (res.ok) {
+          const data = await res.json();
+          setServerAccounts(data.accounts || []);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchAccounts();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,8 +276,13 @@ function LoginPage() {
     }
   };
 
+  const handleSelectAccount = (accountUsername: string) => {
+    setUsername(accountUsername);
+    setShowManualForm(true);
+  };
+
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden bg-[#030712] text-zinc-100 font-sans">
+    <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#030712] text-zinc-100 font-sans">
       <div className="absolute top-[15%] left-[20%] w-[380px] h-[380px] rounded-full bg-cyan-500/15 filter blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full bg-pink-500/10 filter blur-[120px] pointer-events-none" />
 
@@ -168,14 +290,14 @@ function LoginPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="w-full max-w-[420px] bg-[#050b1d]/90 border border-cyan-500/30 rounded-[32px] p-8 shadow-[0_0_50px_rgba(0,240,255,0.15)] flex flex-col z-10 backdrop-blur-xl"
+        className="w-full max-w-[460px] bg-[#050b1d]/95 border border-cyan-500/30 rounded-[32px] p-6 sm:p-8 shadow-[0_0_50px_rgba(0,240,255,0.15)] flex flex-col z-10 backdrop-blur-xl"
       >
         {/* Core Top Title Panel */}
-        <div className="flex flex-col items-center justify-center pb-6 select-none">
+        <div className="flex flex-col items-center justify-center pb-5 select-none">
           <motion.div 
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="w-13 h-13 rounded-2xl bg-cyan-500/10 border border-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.4)] mb-4"
+            className="w-13 h-13 rounded-2xl bg-cyan-500/10 border border-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.4)] mb-3"
           >
             <Cpu className="w-6 h-6 text-cyan-400 font-bold" />
           </motion.div>
@@ -183,93 +305,225 @@ function LoginPage() {
             STUDY<span className="text-pink-500">CTRL</span>
           </h1>
           <p className="text-[10px] text-zinc-400 tracking-widest mt-1 font-bold uppercase rajdhani">
-            TELEMETRY WORKSPACE AUTH
+            TELEMETRY WORKSPACE AUTH & IDENTITY
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] uppercase text-cyan-400 font-bold tracking-widest pl-1 select-none font-mono">
-              Username Handle
-            </label>
-            <div className="relative flex items-center">
-              <UserIcon className="absolute left-4 w-4 h-4 text-zinc-500" />
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
-                className="w-full bg-[#081229] border border-cyan-500/20 focus:border-cyan-400 py-3.5 pl-11 pr-4 rounded-2xl text-sm text-cyan-100 placeholder:text-zinc-600 transition-all outline-none focus:ring-2 focus:ring-cyan-500/30 font-mono"
-                id="login-username"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] uppercase text-cyan-400 font-bold tracking-widest pl-1 select-none font-mono">
-              Cipher Password
-            </label>
-            <div className="relative flex items-center">
-              <KeyRound className="absolute left-4 w-4 h-4 text-zinc-500" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full bg-[#081229] border border-cyan-500/20 focus:border-cyan-400 py-3.5 pl-11 pr-4 rounded-2xl text-sm tracking-widest text-cyan-100 placeholder:text-zinc-600 transition-all outline-none focus:ring-2 focus:ring-cyan-500/30 font-mono"
-                id="login-password"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end -mt-1 pl-1">
-            <Link to="/forgot-password">
-              <span className="text-xs text-zinc-400 hover:text-cyan-400 transition-colors cursor-pointer select-none font-mono">
-                Recover Access Key?
+        {/* SAVED ACCOUNTS ON THIS DEVICE */}
+        {savedAccounts.length > 0 && !showManualForm && (
+          <div className="flex flex-col gap-3 mb-5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase text-cyan-400 font-black tracking-widest font-mono flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5" />
+                Saved Accounts on Device ({savedAccounts.length})
               </span>
-            </Link>
-          </div>
+              <button
+                type="button"
+                onClick={() => setShowManualForm(true)}
+                className="text-[10px] text-zinc-400 hover:text-cyan-300 font-mono underline cursor-pointer"
+              >
+                Enter other handle
+              </button>
+            </div>
 
-          {loginError && (
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-pink-500/10 border border-pink-500/40 rounded-2xl p-3 text-center text-xs text-pink-300 font-mono font-medium"
+            <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+              {savedAccounts.map((acc) => {
+                const isAdmin = acc.isAdmin || acc.username.toLowerCase() === "jaijagannath";
+                return (
+                  <div
+                    key={acc.id || acc.username}
+                    onClick={() => {
+                      if (acc.token) {
+                        switchAccount(acc);
+                      } else {
+                        handleSelectAccount(acc.username);
+                      }
+                    }}
+                    className="p-3 bg-[#081229] hover:bg-[#0c1b3b] border border-cyan-500/20 hover:border-cyan-400 rounded-2xl flex items-center justify-between gap-3 transition-all cursor-pointer group shadow-sm"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs font-mono shrink-0 ${
+                        isAdmin
+                          ? "bg-pink-500/20 border border-pink-500/50 text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.3)]"
+                          : "bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 shadow-[0_0_10px_rgba(0,240,255,0.3)]"
+                      }`}>
+                        {acc.username.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-white truncate font-mono">{acc.username}</span>
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md font-mono ${
+                            isAdmin
+                              ? "bg-pink-500/20 text-pink-300 border border-pink-500/40"
+                              : "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30"
+                          }`}>
+                            {isAdmin ? "ADMIN" : "CADET"}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-400 truncate font-mono">
+                          {acc.email || "Local persistent node"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] text-cyan-400 group-hover:translate-x-0.5 transition-transform font-bold font-mono">
+                        {acc.token ? "LOGIN →" : "SELECT"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSavedAccount(acc.username);
+                        }}
+                        className="p-1.5 text-zinc-500 hover:text-pink-400 hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer"
+                        title="Remove from saved list on this device"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setUsername("");
+                setPassword("");
+                setShowManualForm(true);
+              }}
+              className="w-full py-2.5 bg-[#081229] hover:bg-[#0c1a38] border border-cyan-500/30 text-cyan-300 font-bold text-xs rounded-xl font-mono uppercase tracking-wider transition-all cursor-pointer text-center mt-1"
             >
-              {loginError}
-            </motion.div>
-          )}
+              + Use / Register Another Account
+            </button>
+          </div>
+        )}
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={!username || !password || loginPending}
-            className="mt-2 text-xs font-black uppercase tracking-wider py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center orbitron"
-            id="login-submit"
-          >
-            {loginPending ? "AUTHENTICATING..." : "ENGAGE WORKSPACE"}
-          </motion.button>
+        {/* LOGIN FORM */}
+        {(savedAccounts.length === 0 || showManualForm) && (
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            {savedAccounts.length > 0 && (
+              <div className="flex items-center justify-between -mb-1">
+                <span className="text-[10px] text-zinc-400 font-mono">Entering credentials</span>
+                <button
+                  type="button"
+                  onClick={() => setShowManualForm(false)}
+                  className="text-[10px] text-cyan-400 hover:text-cyan-300 font-mono underline cursor-pointer"
+                >
+                  ← Back to Saved Accounts
+                </button>
+              </div>
+            )}
 
-          <span className="text-center text-xs text-zinc-400 mt-2 select-none font-mono">
-            New operative?{" "}
-            <Link to="/register">
-              <span className="text-cyan-400 hover:text-cyan-300 font-bold cursor-pointer">
-                Register Node
-              </span>
-            </Link>
-          </span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] uppercase text-cyan-400 font-bold tracking-widest pl-1 select-none font-mono">
+                Username Handle
+              </label>
+              <div className="relative flex items-center">
+                <UserIcon className="absolute left-4 w-4 h-4 text-zinc-500" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter username"
+                  className="w-full bg-[#081229] border border-cyan-500/20 focus:border-cyan-400 py-3.5 pl-11 pr-4 rounded-2xl text-sm text-cyan-100 placeholder:text-zinc-600 transition-all outline-none focus:ring-2 focus:ring-cyan-500/30 font-mono"
+                  id="login-username"
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Elegant Quote banner */}
-          <div className="mt-3 pt-4 border-t border-cyan-500/20 flex flex-col gap-2.5 select-none text-left">
-            <div className="bg-[#071026] border border-cyan-500/20 rounded-2xl p-3.5 flex gap-3 items-start">
-              <Sparkles className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed text-zinc-400 italic font-mono">
-                "Consistency is the key secret for success. Show up daily and build your future."
-              </p>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] uppercase text-cyan-400 font-bold tracking-widest pl-1 select-none font-mono">
+                Cipher Password
+              </label>
+              <div className="relative flex items-center">
+                <KeyRound className="absolute left-4 w-4 h-4 text-zinc-500" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter cipher password"
+                  className="w-full bg-[#081229] border border-cyan-500/20 focus:border-cyan-400 py-3.5 pl-11 pr-4 rounded-2xl text-sm tracking-widest text-cyan-100 placeholder:text-zinc-600 transition-all outline-none focus:ring-2 focus:ring-cyan-500/30 font-mono"
+                  id="login-password"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end -mt-1 pl-1">
+              <Link to="/forgot-password">
+                <span className="text-xs text-zinc-400 hover:text-cyan-400 transition-colors cursor-pointer select-none font-mono">
+                  Recover Access Key?
+                </span>
+              </Link>
+            </div>
+
+            {loginError && (
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-pink-500/10 border border-pink-500/40 rounded-2xl p-3 text-center text-xs text-pink-300 font-mono font-medium"
+              >
+                {loginError}
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={!username || !password || loginPending}
+              className="mt-1 text-xs font-black uppercase tracking-wider py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-center orbitron"
+              id="login-submit"
+            >
+              {loginPending ? "AUTHENTICATING..." : "ENGAGE WORKSPACE"}
+            </motion.button>
+          </form>
+        )}
+
+        {/* Registered account quick select chips if any registered on server */}
+        {serverAccounts.length > 0 && !showManualForm && savedAccounts.length === 0 && (
+          <div className="mt-4 pt-3 border-t border-cyan-500/20 flex flex-col gap-2">
+            <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono font-bold">
+              Available Nodes on Server:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {serverAccounts.map((acc) => (
+                <button
+                  key={acc.id}
+                  type="button"
+                  onClick={() => handleSelectAccount(acc.username)}
+                  className="px-3 py-1 bg-[#081229] hover:bg-cyan-500/10 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 text-xs rounded-xl font-mono transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>{acc.username}</span>
+                  {acc.isAdmin && <span className="text-[9px] text-pink-400 font-bold font-mono">[ADMIN]</span>}
+                </button>
+              ))}
             </div>
           </div>
-        </form>
+        )}
+
+        <span className="text-center text-xs text-zinc-400 mt-4 select-none font-mono">
+          New operative?{" "}
+          <Link to="/register">
+            <span className="text-cyan-400 hover:text-cyan-300 font-bold cursor-pointer">
+              Register Node
+            </span>
+          </Link>
+        </span>
+
+        {/* Elegant Quote banner */}
+        <div className="mt-3 pt-3 border-t border-cyan-500/20 flex flex-col gap-2.5 select-none text-left">
+          <div className="bg-[#071026] border border-cyan-500/20 rounded-2xl p-3 flex gap-2.5 items-start">
+            <Sparkles className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] leading-relaxed text-zinc-400 italic font-mono">
+              "Consistency is the key secret for success. Show up daily and build your future."
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
@@ -846,12 +1100,13 @@ function LobbyPage() {
 // --- PAGE 4: SESSION ROOM (/session/:code) ---
 function SessionRoomPage({ params }: { params: { code: string } }) {
   const code = params.code.toUpperCase();
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, savedAccounts, switchAccount } = useAuth();
   const [, setLocation] = useLocation();
 
   // Network WebSocket State
   const [isConnected, setIsConnected] = useState(false);
   const [connecting, setConnecting] = useState(true);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [roomConfig, setRoomConfig] = useState<RoomConfig | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -1128,14 +1383,23 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     fetchStreak();
   }, [token]);
 
-  // Connect & Reconnect protocol
+  // Connect & Reconnect protocol with auto-retry on mobile / unstable IP networks
+  const reconnectTimerRef = useRef<any>(null);
+
   const connect = () => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+
     setConnecting(true);
     setLostConnection(false);
 
     try {
       if (wsRef.current) {
-        wsRef.current.close();
+        try {
+          wsRef.current.close();
+        } catch (_) {}
       }
 
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -1233,6 +1497,15 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
         // Only trigger lost connection overlay if not explicitly kicked out or replaced
         if (!kickedOut && !replacedOut) {
           setLostConnection(true);
+          // Auto-reconnect after 3 seconds if disconnected accidentally on network hop
+          if (!reconnectTimerRef.current) {
+            reconnectTimerRef.current = setTimeout(() => {
+              if (token && code) {
+                console.log("Auto-reconnecting to study network...");
+                connect();
+              }
+            }, 3000);
+          }
         }
       };
 
@@ -1242,11 +1515,26 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     } catch (e) {
       setIsConnected(false);
       setLostConnection(true);
+      if (!reconnectTimerRef.current) {
+        reconnectTimerRef.current = setTimeout(() => {
+          if (token && code) {
+            connect();
+          }
+        }, 4000);
+      }
     }
   };
 
   useEffect(() => {
     connect();
+
+    // Auto-reconnect when device regains internet connection (e.g. mobile 4G/5G / WiFi reconnect)
+    const handleOnline = () => {
+      console.log("Device back online, re-engaging workspace connection...");
+      connect();
+    };
+
+    window.addEventListener("online", handleOnline);
 
     // Secondary local tick emitter to ensure clocks sync smoothly in real-time
     const interval = setInterval(() => {
@@ -1254,7 +1542,11 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     }, 1000);
 
     return () => {
+      window.removeEventListener("online", handleOnline);
       clearInterval(interval);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+      }
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -1872,6 +2164,88 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             <Copy className="h-3.5 w-3.5 text-cyan-400" />
             <span id="room-copy-badge">SHARE</span>
           </button>
+
+          {/* Account Quick Switcher & Profile Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+              className="bg-[#081229] hover:bg-[#0c1a3b] border border-cyan-500/30 text-cyan-200 text-[11px] font-bold py-1.5 px-3 rounded-full flex items-center gap-2 transition-all cursor-pointer font-mono"
+            >
+              <div className={`w-2 h-2 rounded-full ${
+                user?.username.toLowerCase() === "jaijagannath" ? "bg-pink-400 shadow-[0_0_8px_rgba(236,72,153,1)]" : "bg-cyan-400 shadow-[0_0_8px_rgba(0,240,255,1)]"
+              }`} />
+              <span className="font-bold">{user?.username}</span>
+              <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-mono ${
+                user?.username.toLowerCase() === "jaijagannath"
+                  ? "bg-pink-500/20 text-pink-300 border border-pink-500/40"
+                  : "bg-cyan-500/15 text-cyan-300 border border-cyan-500/30"
+              }`}>
+                {user?.username.toLowerCase() === "jaijagannath" ? "ADMIN" : "CADET"}
+              </span>
+            </button>
+
+            <AnimatePresence>
+              {isAccountMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-2 w-72 bg-[#050b1d] border border-cyan-500/30 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,240,255,0.3)] z-50 flex flex-col gap-2.5 backdrop-blur-xl"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20">
+                    <span className="text-[10px] text-zinc-400 uppercase font-mono font-bold">Active Operative</span>
+                    <span className="text-[10px] text-cyan-400 font-mono font-bold">{user?.username}</span>
+                  </div>
+
+                  {/* Account Settings button */}
+                  <button
+                    onClick={() => {
+                      setIsAccountMenuOpen(false);
+                      setViewStatsId(true);
+                    }}
+                    className="w-full text-left px-3 py-2 bg-[#081229] hover:bg-cyan-500/10 border border-cyan-500/20 hover:border-cyan-400 rounded-xl text-xs text-cyan-300 font-mono flex items-center justify-between transition-all cursor-pointer"
+                  >
+                    <span>Diagnostics & Account</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-cyan-400" />
+                  </button>
+
+                  {/* Other saved accounts on device */}
+                  {savedAccounts.filter(a => a.username.toLowerCase() !== user?.username.toLowerCase()).length > 0 && (
+                    <div className="flex flex-col gap-1 pt-1 border-t border-cyan-500/20">
+                      <span className="text-[10px] text-zinc-400 uppercase font-mono font-bold">Switch to Saved Node:</span>
+                      {savedAccounts
+                        .filter(a => a.username.toLowerCase() !== user?.username.toLowerCase())
+                        .map(acc => (
+                          <button
+                            key={acc.id || acc.username}
+                            onClick={() => {
+                              setIsAccountMenuOpen(false);
+                              switchAccount(acc);
+                            }}
+                            className="w-full text-left px-2.5 py-1.5 hover:bg-cyan-500/10 rounded-lg text-xs font-mono text-zinc-200 hover:text-cyan-300 flex items-center justify-between transition-all cursor-pointer"
+                          >
+                            <span className="truncate">{acc.username}</span>
+                            <span className="text-[9px] text-zinc-500 uppercase">{acc.isAdmin ? "Admin" : "Cadet"}</span>
+                          </button>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* Sign out */}
+                  <button
+                    onClick={() => {
+                      setIsAccountMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full text-left px-3 py-2 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 rounded-xl text-xs text-pink-300 font-mono flex items-center justify-between transition-all cursor-pointer mt-1"
+                  >
+                    <span>Sign Out of Node</span>
+                    <LogOut className="h-3.5 w-3.5 text-pink-400" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Log out of session */}
           <button 
@@ -4166,10 +4540,50 @@ function NotFoundPage() {
   );
 }
 
-// --- MASTER ROUTER WRAPPER ---
-export default function App() {
+// --- SUBTLE BLUE DOT TRIGGER FOR ADMIN ACCESS ---
+function GlobalAdminTriggerDot({ onTrigger }: { onTrigger: () => void }) {
+  const lastClickRef = useRef<number>(0);
+  const timerRef = useRef<any>(null);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const now = Date.now();
+    if (now - lastClickRef.current < 500) {
+      // 2 clicks in under 500ms
+      if (timerRef.current) clearTimeout(timerRef.current);
+      lastClickRef.current = 0;
+      onTrigger();
+    } else {
+      lastClickRef.current = now;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        lastClickRef.current = 0;
+      }, 500);
+    }
+  };
+
   return (
-    <AuthProvider>
+    <div
+      onClick={handleClick}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        onTrigger();
+      }}
+      title="System Status"
+      className="fixed bottom-3 right-4 z-40 p-2 cursor-pointer group select-none transition-transform"
+    >
+      <div className="w-2.5 h-2.5 rounded-full bg-cyan-400/80 hover:bg-cyan-300 shadow-[0_0_8px_rgba(0,240,255,0.9)] group-hover:scale-150 transition-all duration-300" />
+    </div>
+  );
+}
+
+// Master Content with Admin Modal Wrapper
+function MasterAppContent() {
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const { login } = useAuth();
+
+  return (
+    <>
       <Switch>
         {/* Guarded access */}
         <Route path="/">
@@ -4187,6 +4601,28 @@ export default function App() {
         {/* Fallback */}
         <Route component={NotFoundPage} />
       </Switch>
+
+      {/* Blue dot at down of the website - double click opens Admin Login */}
+      <GlobalAdminTriggerDot onTrigger={() => setIsAdminModalOpen(true)} />
+
+      {/* Secret Admin Login Modal */}
+      <AdminLoginModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        onSuccess={(token, adminUser) => {
+          login(token, adminUser);
+          setIsAdminModalOpen(false);
+        }}
+      />
+    </>
+  );
+}
+
+// --- MASTER ROUTER WRAPPER ---
+export default function App() {
+  return (
+    <AuthProvider>
+      <MasterAppContent />
     </AuthProvider>
   );
 }
