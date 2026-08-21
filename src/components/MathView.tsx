@@ -41,7 +41,7 @@ export function convertUnicodeToLatex(str: string): string {
 /**
  * Safely renders a LaTeX formula string with KaTeX
  */
-function renderKaTeXString(formula: string, displayMode: boolean = false): string | null {
+export function renderKaTeXString(formula: string, displayMode: boolean = false): string | null {
   try {
     return katex.renderToString(formula.trim(), {
       displayMode,
@@ -57,7 +57,7 @@ function renderKaTeXString(formula: string, displayMode: boolean = false): strin
  * Checks if a string is purely a standalone mathematical formula or equation
  * (as opposed to an English prose sentence describing a physics question or summary).
  */
-function isPureFormula(str: string): boolean {
+export function isPureFormula(str: string): boolean {
   const trimmed = str.trim();
 
   // If it starts with standard LaTeX macros
@@ -65,24 +65,24 @@ function isPureFormula(str: string): boolean {
     return true;
   }
 
-  // Count non-math English words (4+ letters) that aren't math functions
+  // Count non-math English words (3+ letters) that aren't math functions
   const words = trimmed
     .replace(/\\[a-zA-Z]+/g, "")
     .replace(/\{[^}]*\}/g, "")
     .split(/[\s,;:!?()]+/)
     .filter(
       (w) =>
-        /^[a-zA-Z]{4,}$/.test(w) &&
-        !["sin", "cos", "tan", "cot", "sec", "csc", "log", "sqrt", "frac", "left", "right", "implies", "cdot", "quad", "text"].includes(w.toLowerCase())
+        /^[a-zA-Z]{3,}$/.test(w) &&
+        !["sin", "cos", "tan", "cot", "sec", "csc", "log", "sqrt", "frac", "left", "right", "implies", "cdot", "quad", "text", "and", "for"].includes(w.toLowerCase())
     );
 
-  // If there are 3 or more English words (e.g. "body", "mass", "moving", "velocity", "undergoes", "collision")
+  // If there are 2 or more regular English words (e.g. "body", "mass", "moving", "velocity", "undergoes", "collision", "find")
   // it is PROSE, NOT a standalone formula!
-  if (words.length >= 3) {
+  if (words.length >= 2) {
     return false;
   }
 
-  // If it contains typical LaTeX math markers or equation structure
+  // If it contains typical LaTeX math markers or equation structure without prose words
   if (
     trimmed.includes("\\") ||
     trimmed.includes("^") ||
@@ -210,5 +210,6 @@ export const MathView: React.FC<MathViewProps> = ({
 
   // 5. English prose sentence (e.g. questionText, explanation summary)
   // Preserves normal readable spaces, fonts, line-height, and typography
-  return <span className={`leading-relaxed text-zinc-200 font-normal ${className}`}>{raw}</span>;
+  return <span className={`leading-relaxed text-zinc-100 font-normal tracking-normal ${className}`}>{raw}</span>;
 };
+

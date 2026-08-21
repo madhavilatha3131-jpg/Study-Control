@@ -372,12 +372,13 @@ export function PhysicsOTAdvancedQuiz({ isOpen, onClose }: PhysicsOTAdvancedQuiz
                   </div>
 
                   {/* Question Topic */}
-                  <div className="text-[10px] font-black text-cyan-400/80 uppercase tracking-widest font-mono">
-                    TOPIC: <span className="text-zinc-300">{currentQ.topic}</span>
+                  {/* Question Topic */}
+                  <div className="text-[11px] font-bold text-cyan-400 tracking-wider font-mono">
+                    TOPIC: <span className="text-zinc-200">{currentQ.topic}</span>
                   </div>
 
                   {/* Problem Statement with KaTeX */}
-                  <div className="text-zinc-200 text-sm leading-relaxed font-normal">
+                  <div className="bg-[#050b18]/60 border border-cyan-500/20 rounded-2xl p-4 sm:p-5 text-zinc-100 text-sm sm:text-base leading-relaxed font-normal tracking-normal shadow-sm">
                     <MathView text={currentQ.questionText} />
                   </div>
 
@@ -447,7 +448,7 @@ export function PhysicsOTAdvancedQuiz({ isOpen, onClose }: PhysicsOTAdvancedQuiz
                           {/* Render Option Content with MathView */}
                           <div className="flex-1 text-xs sm:text-sm font-medium leading-relaxed flex items-center gap-2">
                             <div className="overflow-x-auto py-1">
-                              <MathView text={opt.latex || opt.text} />
+                              <MathView latex={opt.latex} text={opt.text} />
                             </div>
                           </div>
 
