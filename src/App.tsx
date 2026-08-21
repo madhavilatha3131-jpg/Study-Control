@@ -230,12 +230,18 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginPending, setLoginPending] = useState(false);
+  const [activeAccountLoggingIn, setActiveAccountLoggingIn] = useState<string | null>(null);
   const [serverAccounts, setServerAccounts] = useState<any[]>([]);
   const [showManualForm, setShowManualForm] = useState(false);
 
   useEffect(() => {
     // Clear prefill once read
-    localStorage.removeItem("study_prefill_username");
+    const prefill = localStorage.getItem("study_prefill_username");
+    if (prefill) {
+      setUsername(prefill);
+      setShowManualForm(true);
+      localStorage.removeItem("study_prefill_username");
+    }
 
     // Fetch registered accounts from server to make discovering & picking accounts effortless
     const fetchAccounts = async () => {
@@ -278,7 +284,44 @@ function LoginPage() {
 
   const handleSelectAccount = (accountUsername: string) => {
     setUsername(accountUsername);
+    setPassword("");
+    setLoginError("");
     setShowManualForm(true);
+    setTimeout(() => {
+      document.getElementById("login-password")?.focus();
+    }, 80);
+  };
+
+  const handleAccountClick = async (acc: SavedAccount) => {
+    setLoginError("");
+    if (acc.token) {
+      setActiveAccountLoggingIn(acc.username);
+      setLoginPending(true);
+      try {
+        const res = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${acc.token}` },
+        });
+        if (res.ok) {
+          const freshUser = await res.json();
+          login(acc.token, freshUser);
+          setActiveAccountLoggingIn(null);
+          setLoginPending(false);
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setActiveAccountLoggingIn(null);
+      setLoginPending(false);
+    }
+
+    // If token not present or rejected by server, smoothly open password entry for this account
+    setUsername(acc.username);
+    setPassword("");
+    setShowManualForm(true);
+    setTimeout(() => {
+      document.getElementById("login-password")?.focus();
+    }, 80);
   };
 
   return (
@@ -319,7 +362,11 @@ function LoginPage() {
               </span>
               <button
                 type="button"
-                onClick={() => setShowManualForm(true)}
+                onClick={() => {
+                  setUsername("");
+                  setPassword("");
+                  setShowManualForm(true);
+                }}
                 className="text-[10px] text-zinc-400 hover:text-cyan-300 font-mono underline cursor-pointer"
               >
                 Enter other handle
@@ -329,17 +376,12 @@ function LoginPage() {
             <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
               {savedAccounts.map((acc) => {
                 const isAdmin = acc.isAdmin || acc.username.toLowerCase() === "jaijagannath";
+                const isThisLoggingIn = activeAccountLoggingIn === acc.username;
                 return (
                   <div
                     key={acc.id || acc.username}
-                    onClick={() => {
-                      if (acc.token) {
-                        switchAccount(acc);
-                      } else {
-                        handleSelectAccount(acc.username);
-                      }
-                    }}
-                    className="p-3 bg-[#081229] hover:bg-[#0c1b3b] border border-cyan-500/20 hover:border-cyan-400 rounded-2xl flex items-center justify-between gap-3 transition-all cursor-pointer group shadow-sm"
+                    onClick={() => handleAccountClick(acc)}
+                    className={`p-3 bg-[#081229] hover:bg-[#0c1b3b] border ${isThisLoggingIn ? "border-cyan-400 bg-cyan-950/30" : "border-cyan-500/20 hover:border-cyan-400"} rounded-2xl flex items-center justify-between gap-3 transition-all cursor-pointer group shadow-sm`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs font-mono shrink-0 ${
@@ -368,7 +410,7 @@ function LoginPage() {
 
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-[10px] text-cyan-400 group-hover:translate-x-0.5 transition-transform font-bold font-mono">
-                        {acc.token ? "LOGIN →" : "SELECT"}
+                        {isThisLoggingIn ? "CONNECTING..." : acc.token ? "LOGIN →" : "SELECT"}
                       </span>
                       <button
                         type="button"

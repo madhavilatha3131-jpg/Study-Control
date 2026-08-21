@@ -3,7 +3,7 @@
     "id": "admin-jagannath-root",
     "username": "JaiJagannath",
     "email": "admin@studyctrl.security",
-    "passwordHash": "$2b$10$w9FjT2lJ.yP3n4sH/X0m8.o1t5fR5e7Y9u3i1k1m1q1w1e1r1t1y",
+    "passwordHash": "$2b$10$bL7r5O0USz77ILkZ72zRHej6f2mK6ZeGMtaci6KkNSGoJuK6VvdVu",
     "securityQuestion": "Administrative security clearance verification code?",
     "securityAnswerHash": "$2b$10$w9FjT2lJ.yP3n4sH/X0m8.o1t5fR5e7Y9u3i1k1m1q1w1e1r1t1y",
     "dailyStats": {},
@@ -12,5 +12,18 @@
     "role": "admin",
     "isAdmin": true,
     "createdAt": "2026-08-21T03:48:00.000Z"
+  },
+  {
+    "id": "4mqbr1h74",
+    "username": "CadetArjun",
+    "email": "arjun@test.com",
+    "passwordHash": "$2b$10$TfI6QC..z1a2ROpg0894yujS5W3kD8m5fBu98PU0sFx.KVyreXqFq",
+    "securityQuestion": "Pet name",
+    "securityAnswerHash": "$2b$10$WGhj5iWrExZjmkVIe3IkF.P6y3YvTDo.HEo2qqX14YgZdjbtm8KRm",
+    "dailyStats": {},
+    "sessionHistory": [],
+    "role": "user",
+    "isAdmin": false,
+    "createdAt": "2026-08-21T06:16:31.589Z"
   }
 ]

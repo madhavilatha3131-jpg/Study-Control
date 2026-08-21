@@ -488,7 +488,14 @@ app.get("/api/auth/me", authenticateToken, (req: any, res) => {
   if (!user) {
     return res.status(404).json({ error: "User identity wiped" });
   }
-  return res.json({ id: user.id, username: user.username, email: user.email });
+  const isJagannathAdmin = user.username.toLowerCase() === "jaijagannath" || user.isAdmin || user.role === "admin";
+  return res.json({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: isJagannathAdmin ? "admin" : "user",
+    isAdmin: isJagannathAdmin,
+  });
 });
 
 // Request password reset code via username flow
