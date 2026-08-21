@@ -11,7 +11,7 @@ interface MathViewProps {
 /**
  * Converts standard Unicode physics/math symbols to their LaTeX equivalents
  */
-function convertUnicodeToLatex(str: string): string {
+export function convertUnicodeToLatex(str: string): string {
   return str
     .replace(/√\(([^)]+)\)/g, "\\sqrt{$1}")
     .replace(/√([0-9a-zA-Z]+)/g, "\\sqrt{$1}")
@@ -21,12 +21,12 @@ function convertUnicodeToLatex(str: string): string {
     .replace(/k̂/g, "\\hat{k}")
     .replace(/≤/g, " \\le ")
     .replace(/≥/g, " \\ge ")
-    .replace(/θ/g, " \\theta ")
-    .replace(/Δ/g, " \\Delta ")
-    .replace(/λ/g, " \\lambda ")
-    .replace(/μ/g, " \\mu ")
+    .replace(/θ/g, "\\theta ")
+    .replace(/Δ/g, "\\Delta ")
+    .replace(/λ/g, "\\lambda ")
+    .replace(/μ/g, "\\mu ")
     .replace(/⟹/g, " \\implies ")
-    .replace(/±/g, " \\pm ")
+    .replace(/±/g, "\\pm ")
     .replace(/₀/g, "_0")
     .replace(/₁/g, "_1")
     .replace(/₂/g, "_2")
@@ -39,32 +39,7 @@ function convertUnicodeToLatex(str: string): string {
 }
 
 /**
- * Checks if a string contains typical LaTeX macros or math symbols
- */
-function containsLatexSyntax(str: string): boolean {
-  return (
-    /\\[a-zA-Z]+/.test(str) ||
-    str.includes("=") ||
-    str.includes("^") ||
-    str.includes("_") ||
-    str.includes("\\") ||
-    str.includes("{") ||
-    str.includes("}") ||
-    str.includes("√") ||
-    str.includes("·") ||
-    str.includes("≤") ||
-    str.includes("≥") ||
-    str.includes("θ") ||
-    str.includes("Δ") ||
-    str.includes("λ") ||
-    str.includes("μ") ||
-    str.includes("⟹") ||
-    str.includes("±")
-  );
-}
-
-/**
- * Attempts to render a formula string directly via KaTeX
+ * Safely renders a LaTeX formula string with KaTeX
  */
 function renderKaTeXString(formula: string, displayMode: boolean = false): string | null {
   try {
@@ -79,8 +54,55 @@ function renderKaTeXString(formula: string, displayMode: boolean = false): strin
 }
 
 /**
- * MathView component: renders mathematical expressions with KaTeX while preserving
- * clean text readability for questions, formula cheat sheets, options, and explanations.
+ * Checks if a string is purely a standalone mathematical formula or equation
+ * (as opposed to an English prose sentence describing a physics question or summary).
+ */
+function isPureFormula(str: string): boolean {
+  const trimmed = str.trim();
+
+  // If it starts with standard LaTeX macros
+  if (/^\\(frac|sqrt|Delta|left|begin|vec|int|sum|lim|partial|alpha|beta|theta|tan|sin|cos|log|ln|text)\b/.test(trimmed)) {
+    return true;
+  }
+
+  // Count non-math English words (4+ letters) that aren't math functions
+  const words = trimmed
+    .replace(/\\[a-zA-Z]+/g, "")
+    .replace(/\{[^}]*\}/g, "")
+    .split(/[\s,;:!?()]+/)
+    .filter(
+      (w) =>
+        /^[a-zA-Z]{4,}$/.test(w) &&
+        !["sin", "cos", "tan", "cot", "sec", "csc", "log", "sqrt", "frac", "left", "right", "implies", "cdot", "quad", "text"].includes(w.toLowerCase())
+    );
+
+  // If there are 3 or more English words (e.g. "body", "mass", "moving", "velocity", "undergoes", "collision")
+  // it is PROSE, NOT a standalone formula!
+  if (words.length >= 3) {
+    return false;
+  }
+
+  // If it contains typical LaTeX math markers or equation structure
+  if (
+    trimmed.includes("\\") ||
+    trimmed.includes("^") ||
+    trimmed.includes("_") ||
+    trimmed.includes("=") ||
+    trimmed.includes("≤") ||
+    trimmed.includes("≥") ||
+    trimmed.includes("√") ||
+    trimmed.includes("·") ||
+    trimmed.includes("⟹")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * MathView component: cleanly renders mathematical formulas with KaTeX while preserving
+ * full natural word spacing, typography, and readability for English sentences and questions.
  */
 export const MathView: React.FC<MathViewProps> = ({
   text = "",
@@ -88,7 +110,7 @@ export const MathView: React.FC<MathViewProps> = ({
   className = "",
   inline = true,
 }) => {
-  // 1. Explicit latex prop provided
+  // 1. Explicit latex prop provided (e.g. from options or formula note)
   if (latex) {
     const html = renderKaTeXString(latex, !inline);
     if (html) {
@@ -103,14 +125,13 @@ export const MathView: React.FC<MathViewProps> = ({
   }
 
   if (!text) return null;
-
   const raw = text.trim();
 
   // 2. Text contains explicit $...$ or $$...$$ delimiters
   if (raw.includes("$")) {
     const parts = raw.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
     return (
-      <span className={`inline leading-relaxed text-zinc-100 ${className}`}>
+      <span className={`leading-relaxed text-zinc-100 ${className}`}>
         {parts.map((part, i) => {
           if (part.startsWith("$$") && part.endsWith("$$")) {
             const math = part.slice(2, -2).trim();
@@ -130,7 +151,7 @@ export const MathView: React.FC<MathViewProps> = ({
             return html ? (
               <span
                 key={i}
-                className="inline-block text-cyan-200 px-0.5"
+                className="inline-block text-cyan-200 px-0.5 align-baseline"
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             ) : (
@@ -143,40 +164,38 @@ export const MathView: React.FC<MathViewProps> = ({
     );
   }
 
-  // 3. Check for "Label: Formula" pattern (common in step-by-step solutions)
+  // 3. Step-by-step solution pattern: "Label: Formula"
   // Example: "Time for dropped Ball 2 to reach floor: t₀ = √(2h₀/g)."
   const colonIndex = raw.indexOf(":");
-  if (colonIndex > 0 && colonIndex < raw.length - 2) {
+  if (colonIndex > 0 && colonIndex < 35 && !raw.substring(0, colonIndex).includes("=")) {
     const label = raw.substring(0, colonIndex + 1);
-    const formulaRaw = raw.substring(colonIndex + 1).trim();
+    let formulaPart = raw.substring(colonIndex + 1).trim();
+    let trailingPeriod = false;
+    if (formulaPart.endsWith(".")) {
+      trailingPeriod = true;
+      formulaPart = formulaPart.slice(0, -1).trim();
+    }
 
-    // Check if the formula part contains math notation
-    if (containsLatexSyntax(formulaRaw)) {
-      let cleanedFormula = convertUnicodeToLatex(formulaRaw);
-      let trailingPeriod = false;
-      if (cleanedFormula.endsWith(".")) {
-        trailingPeriod = true;
-        cleanedFormula = cleanedFormula.slice(0, -1).trim();
-      }
-
-      const html = renderKaTeXString(cleanedFormula, !inline && !formulaRaw.includes(" "));
-      if (html) {
+    if (isPureFormula(formulaPart)) {
+      const converted = convertUnicodeToLatex(formulaPart);
+      const html = renderKaTeXString(converted, false);
+      if (html && !html.includes("katex-error")) {
         return (
           <span className={`leading-relaxed text-zinc-100 ${className}`}>
-            <span className="font-semibold text-zinc-300 mr-2">{label}</span>
+            <span className="font-semibold text-cyan-300 mr-2">{label}</span>
             <span
-              className="inline-block text-cyan-200 align-middle"
+              className="inline-block text-cyan-100 align-middle font-mono py-0.5"
               dangerouslySetInnerHTML={{ __html: html }}
             />
-            {trailingPeriod && <span className="text-zinc-300">.</span>}
+            {trailingPeriod && <span className="text-zinc-400">.</span>}
           </span>
         );
       }
     }
   }
 
-  // 4. Check if the string contains LaTeX commands (e.g. \frac, \sqrt, \Delta, \le, etc.)
-  if (containsLatexSyntax(raw)) {
+  // 4. Pure standalone formula (options, cheat sheets, keyFormula)
+  if (isPureFormula(raw)) {
     const converted = convertUnicodeToLatex(raw);
     const html = renderKaTeXString(converted, !inline);
     if (html && !html.includes("katex-error")) {
@@ -189,6 +208,7 @@ export const MathView: React.FC<MathViewProps> = ({
     }
   }
 
-  // 5. Normal plain text
-  return <span className={`leading-relaxed text-zinc-100 ${className}`}>{raw}</span>;
+  // 5. English prose sentence (e.g. questionText, explanation summary)
+  // Preserves normal readable spaces, fonts, line-height, and typography
+  return <span className={`leading-relaxed text-zinc-200 font-normal ${className}`}>{raw}</span>;
 };
