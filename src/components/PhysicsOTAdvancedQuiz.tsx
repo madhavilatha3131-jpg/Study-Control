@@ -444,11 +444,8 @@ export function PhysicsOTAdvancedQuiz({ isOpen, onClose }: PhysicsOTAdvancedQuiz
                             {isSelected ? <Check className="h-4 w-4 stroke-[3]" /> : opt.id}
                           </div>
 
-                          {/* Render Option Label + MathView */}
+                          {/* Render Option Content with MathView */}
                           <div className="flex-1 text-xs sm:text-sm font-medium leading-relaxed flex items-center gap-2">
-                            <span className="font-mono font-bold text-zinc-400 shrink-0">
-                              {opt.label}
-                            </span>
                             <div className="overflow-x-auto py-1">
                               <MathView text={opt.latex || opt.text} />
                             </div>
