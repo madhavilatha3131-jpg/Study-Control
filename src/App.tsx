@@ -1425,10 +1425,38 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     fetchStreak();
   }, [token]);
 
-  // Connect & Reconnect protocol with auto-retry on mobile / unstable IP networks
+  // Connect & Reconnect protocol with exponential backoff auto-retry on unstable networks
   const reconnectTimerRef = useRef<any>(null);
+  const retryCountRef = useRef<number>(0);
+  const isUnmountedRef = useRef<boolean>(false);
+
+  const scheduleReconnect = () => {
+    if (isUnmountedRef.current) return;
+    if (kickedOut || replacedOut) return;
+
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+
+    retryCountRef.current += 1;
+    // Exponential backoff: 1.2s, ~2s, ~3.2s, ~5.1s, up to max 12s + random jitter
+    const delay = Math.min(
+      1200 * Math.pow(1.6, Math.min(retryCountRef.current, 5)) + Math.random() * 400,
+      12000
+    );
+
+    console.log(`[WS] Scheduling reconnect in ${Math.round(delay)}ms (attempt ${retryCountRef.current})...`);
+    reconnectTimerRef.current = setTimeout(() => {
+      if (!isUnmountedRef.current && token && code) {
+        connect();
+      }
+    }, delay);
+  };
 
   const connect = () => {
+    if (isUnmountedRef.current) return;
+
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
@@ -1440,8 +1468,16 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     try {
       if (wsRef.current) {
         try {
-          wsRef.current.close();
+          // Detach listeners before closing to avoid spurious error/close triggers
+          wsRef.current.onopen = null;
+          wsRef.current.onmessage = null;
+          wsRef.current.onerror = null;
+          wsRef.current.onclose = null;
+          if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
+            wsRef.current.close();
+          }
         } catch (_) {}
+        wsRef.current = null;
       }
 
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -1449,14 +1485,22 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
       wsRef.current = socket;
 
       socket.onopen = () => {
-        socket.send(JSON.stringify({ type: "join", token, roomCode: code }));
+        if (isUnmountedRef.current) return;
+        try {
+          socket.send(JSON.stringify({ type: "join", token, roomCode: code }));
+        } catch (err) {
+          console.warn("[WS] Error sending join packet:", err);
+        }
       };
 
       socket.onmessage = (event) => {
+        if (isUnmountedRef.current) return;
         try {
           const payload = JSON.parse(event.data);
 
           if (payload.type === "joined") {
+            // Successful connection & authentication: reset retry backoff counter
+            retryCountRef.current = 0;
             setSelfId(payload.selfId);
             setRoomConfig(payload.config);
             setParticipants(payload.participants);
@@ -1516,13 +1560,13 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           if (payload.type === "kicked") {
             setKickedOut(true);
             setIsConnected(false);
-            socket.close();
+            try { socket.close(); } catch (_) {}
           }
 
           if (payload.type === "replaced") {
             setReplacedOut(true);
             setIsConnected(false);
-            socket.close();
+            try { socket.close(); } catch (_) {}
           }
 
           if (payload.type === "error") {
@@ -1534,45 +1578,45 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
         }
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
+        if (isUnmountedRef.current) return;
         setIsConnected(false);
+        setConnecting(false);
         // Only trigger lost connection overlay if not explicitly kicked out or replaced
         if (!kickedOut && !replacedOut) {
           setLostConnection(true);
-          // Auto-reconnect after 3 seconds if disconnected accidentally on network hop
-          if (!reconnectTimerRef.current) {
-            reconnectTimerRef.current = setTimeout(() => {
-              if (token && code) {
-                console.log("Auto-reconnecting to study network...");
-                connect();
-              }
-            }, 3000);
-          }
+          scheduleReconnect();
         }
       };
 
-      socket.onerror = () => {
+      socket.onerror = (err) => {
+        if (isUnmountedRef.current) return;
+        console.warn("[WS] Socket connection error event caught:", err);
         setIsConnected(false);
+        setConnecting(false);
+        if (!kickedOut && !replacedOut) {
+          setLostConnection(true);
+          scheduleReconnect();
+        }
       };
     } catch (e) {
+      console.warn("[WS] Socket instantiation failed:", e);
+      if (isUnmountedRef.current) return;
       setIsConnected(false);
+      setConnecting(false);
       setLostConnection(true);
-      if (!reconnectTimerRef.current) {
-        reconnectTimerRef.current = setTimeout(() => {
-          if (token && code) {
-            connect();
-          }
-        }, 4000);
-      }
+      scheduleReconnect();
     }
   };
 
   useEffect(() => {
+    isUnmountedRef.current = false;
     connect();
 
     // Auto-reconnect when device regains internet connection (e.g. mobile 4G/5G / WiFi reconnect)
     const handleOnline = () => {
       console.log("Device back online, re-engaging workspace connection...");
+      retryCountRef.current = 0; // Immediate attempt
       connect();
     };
 
@@ -1584,13 +1628,21 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
     }, 1000);
 
     return () => {
+      isUnmountedRef.current = true;
       window.removeEventListener("online", handleOnline);
       clearInterval(interval);
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
       if (wsRef.current) {
-        wsRef.current.close();
+        try {
+          wsRef.current.onopen = null;
+          wsRef.current.onmessage = null;
+          wsRef.current.onerror = null;
+          wsRef.current.onclose = null;
+          wsRef.current.close();
+        } catch (_) {}
       }
     };
   }, [code]);
@@ -4633,6 +4685,12 @@ function MasterAppContent() {
         </Route>
         <Route path="/session/:code">
           {(params) => <GuardedRoute path={`/session/${params.code}`} component={() => <SessionRoomPage params={params} />} />}
+        </Route>
+        <Route path="/seesion/:code">
+          {(params) => <GuardedRoute path={`/seesion/${params.code}`} component={() => <SessionRoomPage params={params} />} />}
+        </Route>
+        <Route path="/room/:code">
+          {(params) => <GuardedRoute path={`/room/${params.code}`} component={() => <SessionRoomPage params={params} />} />}
         </Route>
 
         {/* Public Access */}
