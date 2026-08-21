@@ -3,44 +3,77 @@ import katex from "katex";
 
 interface MathViewProps {
   text: string;
+  latex?: string;
   className?: string;
   inline?: boolean;
 }
 
 /**
- * MathView automatically parses inline LaTeX ($...$ or $$...$$) and standard ASCII math fragments,
- * rendering them with KaTeX. If plain text is passed without delimiters, it checks if it contains
- * mathematical notations (e.g. fractions, sqrt, powers, vectors) and wraps them gracefully.
+ * MathView renders mathematical expressions with KaTeX while preserving clean text readability.
+ * Supports:
+ * 1. Explicit `latex` prop (renders full KaTeX).
+ * 2. Delimited `$inline$` and `$$display$$` LaTeX inside text.
+ * 3. Pure math strings (e.g., options, expressions).
+ * 4. Regular English sentences with math symbols without smashing text into math-mode.
  */
-export const MathView: React.FC<MathViewProps> = ({ text, className = "", inline = true }) => {
-  if (!text) return null;
-
-  // Function to render single LaTeX string with KaTeX
-  const renderLatex = (latex: string, displayMode: boolean = false) => {
+export const MathView: React.FC<MathViewProps> = ({
+  text,
+  latex,
+  className = "",
+  inline = true,
+}) => {
+  // If explicit LaTeX is provided, render directly with KaTeX
+  if (latex) {
     try {
       const html = katex.renderToString(latex, {
+        displayMode: !inline,
+        throwOnError: false,
+        output: "htmlAndMathml",
+      });
+      return (
+        <span
+          className={`inline-block font-sans text-cyan-200 ${className}`}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    } catch {
+      return <span className={className}>{latex}</span>;
+    }
+  }
+
+  if (!text) return null;
+
+  const renderSingleLatex = (formula: string, displayMode: boolean = false) => {
+    try {
+      const html = katex.renderToString(formula, {
         displayMode,
         throwOnError: false,
         output: "htmlAndMathml",
       });
-      return <span key={latex + Math.random()} dangerouslySetInnerHTML={{ __html: html }} />;
+      return (
+        <span
+          key={formula + Math.random()}
+          className="inline-block text-cyan-200 px-0.5"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
     } catch {
-      return <span>{latex}</span>;
+      return <span>{formula}</span>;
     }
   };
 
-  // If text already has $ or $$, parse delimiters
+  // 1. Text contains explicit $...$ or $$...$$ delimiters
   if (text.includes("$")) {
     const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
     return (
-      <span className={className}>
+      <span className={`inline leading-relaxed text-zinc-100 ${className}`}>
         {parts.map((part, i) => {
           if (part.startsWith("$$") && part.endsWith("$$")) {
             const math = part.slice(2, -2).trim();
-            return renderLatex(math, true);
+            return renderSingleLatex(math, true);
           } else if (part.startsWith("$") && part.endsWith("$")) {
             const math = part.slice(1, -1).trim();
-            return renderLatex(math, false);
+            return renderSingleLatex(math, false);
           }
           return <span key={i}>{part}</span>;
         })}
@@ -48,50 +81,56 @@ export const MathView: React.FC<MathViewProps> = ({ text, className = "", inline
     );
   }
 
-  // If it's a direct formula string (like in options), check if it needs auto-math rendering
-  const looksLikeFormula =
-    text.includes("^") ||
-    text.includes("√") ||
-    text.includes("·") ||
-    text.includes("î") ||
-    text.includes("ĵ") ||
-    text.includes("k̂") ||
-    text.includes("≤") ||
-    text.includes("≥") ||
-    text.includes("θ") ||
-    text.includes("Δ") ||
-    text.includes("λ") ||
-    text.includes("μ") ||
-    text.includes("⟹") ||
-    text.includes("/") ||
-    text.includes("v₁") ||
-    text.includes("v₂") ||
-    text.includes("m₁") ||
-    text.includes("m₂");
+  // 2. Determine if the entire text is a short, pure formula (e.g. in option buttons or formula notes)
+  // If it has multiple spaces and words (> 4 words), it is a sentence! Do NOT treat sentence as KaTeX math mode.
+  const wordCount = text.trim().split(/\s+/).length;
+  const isSentence = wordCount > 4 || (text.includes(".") && wordCount > 2) || text.length > 60;
 
-  if (looksLikeFormula) {
-    // Convert common representations into clean LaTeX if not already LaTeX
-    let converted = text
-      .replace(/√\(([^)]+)\)/g, "\\sqrt{$1}")
-      .replace(/√([0-9a-zA-Z]+)/g, "\\sqrt{$1}")
-      .replace(/·/g, " \\cdot ")
-      .replace(/î/g, "\\hat{i}")
-      .replace(/ĵ/g, "\\hat{j}")
-      .replace(/k̂/g, "\\hat{k}")
-      .replace(/≤/g, "\\le ")
-      .replace(/≥/g, "\\ge ")
-      .replace(/θ/g, "\\theta ")
-      .replace(/Δ/g, "\\Delta ")
-      .replace(/λ/g, "\\lambda ")
-      .replace(/μ/g, "\\mu ")
-      .replace(/⟹/g, "\\implies ");
+  if (!isSentence) {
+    const looksLikeFormula =
+      text.includes("^") ||
+      text.includes("√") ||
+      text.includes("·") ||
+      text.includes("î") ||
+      text.includes("ĵ") ||
+      text.includes("k̂") ||
+      text.includes("≤") ||
+      text.includes("≥") ||
+      text.includes("θ") ||
+      text.includes("Δ") ||
+      text.includes("λ") ||
+      text.includes("μ") ||
+      text.includes("⟹") ||
+      text.includes("/") ||
+      text.includes("=") ||
+      text.includes("+") ||
+      text.includes("-") ||
+      text.includes("\\");
 
-    return (
-      <span className={`inline-flex items-center flex-wrap gap-1 ${className}`}>
-        {renderLatex(converted, !inline)}
-      </span>
-    );
+    if (looksLikeFormula) {
+      let converted = text
+        .replace(/√\(([^)]+)\)/g, "\\sqrt{$1}")
+        .replace(/√([0-9a-zA-Z]+)/g, "\\sqrt{$1}")
+        .replace(/·/g, " \\cdot ")
+        .replace(/î/g, "\\hat{i}")
+        .replace(/ĵ/g, "\\hat{j}")
+        .replace(/k̂/g, "\\hat{k}")
+        .replace(/≤/g, "\\le ")
+        .replace(/≥/g, "\\ge ")
+        .replace(/θ/g, "\\theta ")
+        .replace(/Δ/g, "\\Delta ")
+        .replace(/λ/g, "\\lambda ")
+        .replace(/μ/g, "\\mu ")
+        .replace(/⟹/g, "\\implies ");
+
+      return (
+        <span className={`inline-block ${className}`}>
+          {renderSingleLatex(converted, !inline)}
+        </span>
+      );
+    }
   }
 
-  return <span className={className}>{text}</span>;
+  // 3. Normal sentence: render cleanly with high legibility and proper word spaces
+  return <span className={`leading-relaxed text-zinc-100 ${className}`}>{text}</span>;
 };
