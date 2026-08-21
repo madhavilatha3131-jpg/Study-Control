@@ -4,12 +4,13 @@ import {
   Users, Trophy, MessageSquare, LogOut, Copy, Check, Play, Square,
   Volume2, ShieldAlert, Wifi, WifiOff, Paperclip, Send, Maximize2,
   Trash2, Award, Clock, HelpCircle, Lock, User as UserIcon, BookOpen, KeyRound, Cpu, X, Upload, ExternalLink, Compass, ChevronRight, FileText, Smartphone,
-  Home, RefreshCw, Bell, AlertTriangle, ShieldCheck, CheckSquare, Sparkles, Flame, CheckCircle2
+  Home, RefreshCw, Bell, AlertTriangle, ShieldCheck, CheckSquare, Sparkles, Flame, CheckCircle2, Atom
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Participant, Message, RoomConfig, User, StudyMaterial, StudyTask } from "./types";
 import StatsModal from "./components/StatsModal";
 import ParticipantModal from "./components/ParticipantModal";
+import { PhysicsOTAdvancedQuiz } from "./components/PhysicsOTAdvancedQuiz";
 
 // --- MOTIVATIONAL QUOTES ---
 export const STUDY_QUOTES = [
@@ -701,6 +702,7 @@ function LobbyPage() {
   const { user, token, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isPhysicsQuizOpen, setIsPhysicsQuizOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorStr, setErrorStr] = useState("");
 
@@ -810,6 +812,17 @@ function LobbyPage() {
         >
           {loading ? "Connecting Space..." : "Enter Study Space"}
         </motion.button>
+
+        {/* Physics OT Advanced PYQ Quiz Shortcut */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setIsPhysicsQuizOpen(true)}
+          className="w-full py-3.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white shadow-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <Atom className="h-4 w-4 text-cyan-400 animate-spin" style={{ animationDuration: "12s" }} />
+          <span>Physics OT Advanced PYQ (Collisions)</span>
+        </motion.button>
       </motion.div>
 
       {user && token && (
@@ -820,6 +833,12 @@ function LobbyPage() {
           username={user.username}
         />
       )}
+
+      {/* Physics OT Advanced PYQ Exam Modal */}
+      <PhysicsOTAdvancedQuiz
+        isOpen={isPhysicsQuizOpen}
+        onClose={() => setIsPhysicsQuizOpen(false)}
+      />
     </div>
   );
 }
@@ -1044,6 +1063,7 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
   const [viewStatsId, setViewStatsId] = useState(false);
   const [detailedParticipant, setDetailedParticipant] = useState<Participant | null>(null);
   const [showAllNamesModal, setShowAllNamesModal] = useState(false);
+  const [isPhysicsQuizOpen, setIsPhysicsQuizOpen] = useState(false);
 
   // Lightbox view for bases64 image uploads
   const [viewImageUrl, setViewImageUrl] = useState<string | null>(null);
@@ -1813,6 +1833,16 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
             <span className="text-[10px] uppercase tracking-wider font-semibold">{isConnected ? "Live Channel" : "Connecting..."}</span>
           </div>
 
+          {/* Physics OT Advanced PYQ Exam Button */}
+          <button
+            onClick={() => setIsPhysicsQuizOpen(true)}
+            className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 active:scale-95 text-white text-[11px] font-black py-1.5 px-4 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-cyan-600/20"
+            title="Open Physics OT Advanced PYQ interactive exam & diagrams"
+          >
+            <Atom className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: "12s" }} />
+            <span>PHYSICS OT PYQ</span>
+          </button>
+
           {/* Mobile App Simulator Toggle */}
           <button
             onClick={() => setIsMobileSimulatorOpen(true)}
@@ -1900,6 +1930,39 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
                 </AnimatePresence>
               </div>
             </div>
+          </div>
+
+          {/* PHYSICS OT ADVANCED PYQ EXAM WIDGET BANNER */}
+          <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 border border-zinc-700 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg text-white shrink-0 select-none">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 shadow-inner">
+                <Atom className="h-6 w-6 animate-spin" style={{ animationDuration: "12s" }} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 font-mono">
+                    PHYSICS OT ADVANCED PYQ
+                  </span>
+                  <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase">
+                    Collisions & Impulse
+                  </span>
+                </div>
+                <h4 className="text-xs font-bold text-white mt-0.5">
+                  Interactive Exam & Diagrammatic Solvers (Q23 - Q41)
+                </h4>
+                <p className="text-zinc-400 text-[11px] mt-0.5">
+                  Real-time exam timing, multi-correct evaluations (+4 / -2), and complete formula cheatsheets.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsPhysicsQuizOpen(true)}
+              className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5 shrink-0"
+            >
+              <span>Launch Quiz</span>
+              <ChevronRight className="h-4 w-4 stroke-[3]" />
+            </button>
           </div>
 
           {/* REAL BROWSER NOTIFICATION PERMISSION WIDGET */}
@@ -4073,6 +4136,12 @@ function SessionRoomPage({ params }: { params: { code: string } }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Physics OT Advanced PYQ Quiz Modal */}
+      <PhysicsOTAdvancedQuiz
+        isOpen={isPhysicsQuizOpen}
+        onClose={() => setIsPhysicsQuizOpen(false)}
+      />
     </div>
   );
 }
